@@ -118,7 +118,7 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
         <p class="eyebrow" id="ovEye">Phase I · Le pont</p>
         <h2 id="ovTitle">Tiens le pont.</h2>
         <p class="stats" id="ovStats" hidden></p>
-        <p class="long" id="ovDesc">Le Colosse arme sa chaîne pendant 1 seconde. Dès qu'elle part, tu as 0,5 seconde pour lever ton bâton. La barrière renvoie la chaîne dans sa tête. S'il frappe à l'épée, pare les deux coups pour répondre par une orbe de lumière. Son souffle de flamme se pare deux fois plus vite, mais ouvre sa garde. Tu as 4 PV, le Colosse 10 : chaque coup encaissé et chaque riposte retire 1 PV.</p>
+        <p class="long" id="ovDesc">Le Colosse arme sa chaîne pendant 0,75 seconde. Dès qu'elle part, tu as 0,33 seconde pour lever ton bâton. La barrière renvoie la chaîne dans sa tête. S'il frappe à l'épée, pare les deux coups pour répondre par une orbe de lumière. Son souffle de flamme se pare deux fois plus vite, mais ouvre sa garde. Tu as 4 PV, le Colosse 10 : chaque coup encaissé et chaque riposte retire 1 PV.</p>
         <button class="btn" id="go" type="button">Commencer</button>
       </div>
     </div>
@@ -128,7 +128,7 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
     <button class="ward" id="ward" type="button">Lever le bâton</button>
     <p class="hint">Espace, flèche haut, ou toucher l'écran</p>
     <div class="opts">
-      <label for="optHelp"><input type="checkbox" id="optHelp" checked> Aide visuelle</label>
+      <label for="optHelp"><input type="checkbox" id="optHelp"> Aide visuelle</label>
       <label for="optSnd"><input type="checkbox" id="optSnd" checked> Son</label>
     </div>
   </div>
@@ -136,24 +136,24 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
   <div class="rules" id="rules">
   <section class="rule" aria-labelledby="rt">
     <p class="eyebrow" id="rt">Attaque 1 sur 4 · La saisie</p>
-    <div class="strip" role="img" aria-label="Armement 1 seconde, puis fenêtre de parade de 0,5 seconde, puis impact">
-      <div class="s1">Armement 1 s</div><div class="s2">Parade 0,5 s</div><div class="s3"></div>
+    <div class="strip" role="img" aria-label="Armement 0,75 seconde, puis fenêtre de parade de 0,33 seconde, puis impact">
+      <div class="s1" style="flex:2.25">Armement 0,75 s</div><div class="s2">Parade 0,33 s</div><div class="s3"></div>
     </div>
-    <p>Le Colosse lève sa chaîne en arrière pendant 1 seconde. Quand elle part, ta barrière doit être levée au moment où elle touche, donc dans les 0,5 s qui précèdent l'impact. Trop tôt, la barrière retombe avant le choc. Trop tard, la chaîne te saisit, te soulève et te claque sur le pont. Après chaque barrière, le bâton met 0,7 s à se recharger, sauf si elle vient de parer un coup d'épée.</p>
+    <p>Le Colosse lève sa chaîne en arrière pendant 0,75 seconde. Quand elle part, ta barrière doit être levée au moment où elle touche, donc dans les 0,33 s qui précèdent l'impact. Trop tôt, la barrière retombe avant le choc. Trop tard, la chaîne te saisit, te soulève et te claque sur le pont. Après chaque barrière, le bâton met 0,7 s à se recharger, sauf si elle vient de parer un coup d'épée.</p>
   </section>
   <section class="rule" aria-labelledby="rt2">
     <p class="eyebrow" id="rt2">Attaque 2 sur 4 · Le combo d'épée</p>
     <div class="strip" role="img" aria-label="Armement, parade du premier coup, reprise, parade du second coup, puis orbe de lumière">
       <div class="s1" style="flex:7">Armement</div><div class="s2 hit" style="flex:5">Coup 1</div><div class="s1" style="flex:6.5">Reprise</div><div class="s2 hit" style="flex:5">Coup 2</div>
     </div>
-    <p>Le Colosse allume une épée de feu dans son autre main et frappe deux fois : d'abord à l'horizontale, puis à la verticale. Chaque coup se pare comme la chaîne, barrière levée au moment de l'impact, dans les 0,5 s qui le précèdent. Une parade réussie libère aussitôt le bâton, mais une barrière levée trop tôt retombe avant le second coup. Si tu pares les deux coups, le Veilleur lance une orbe de lumière sur le Colosse (−1 PV). Une seule parade ne déclenche rien.</p>
+    <p>Le Colosse allume une épée de feu dans son autre main et frappe deux fois : d'abord à l'horizontale, puis à la verticale. Chaque coup se pare comme la chaîne, barrière levée au moment de l'impact, dans les 0,33 s qui le précèdent. Une parade réussie libère aussitôt le bâton, mais une barrière levée trop tôt retombe avant le second coup. Si tu pares les deux coups, le Veilleur lance une orbe de lumière sur le Colosse (−1 PV). Une seule parade ne déclenche rien.</p>
   </section>
   <section class="rule" aria-labelledby="rt3">
     <p class="eyebrow" id="rt3">Attaque 3 sur 4 · Le souffle de flamme</p>
-    <div class="strip" role="img" aria-label="Inspiration 0,6 seconde, puis fenêtre de parade de 0,25 seconde, puis riposte">
-      <div class="s1" style="flex:6">Inspiration</div><div class="s2 hit" style="flex:2.5">0,25 s</div><div class="s1" style="flex:4;background:rgba(240,232,223,.06);color:var(--muted);border:1px solid var(--line);border-left:0">Fente</div>
+    <div class="strip" role="img" aria-label="Inspiration 0,6 seconde, puis fenêtre de parade de 0,17 seconde, puis riposte">
+      <div class="s1" style="flex:6">Inspiration</div><div class="s2 hit" style="flex:1.7">0,17 s</div><div class="s1" style="flex:4;background:rgba(240,232,223,.06);color:var(--muted);border:1px solid var(--line);border-left:0">Fente</div>
     </div>
-    <p>Le Colosse aspire l'air pendant 0,6 s, puis crache un souffle de flamme. C'est l'attaque rapide : la fenêtre de parade est deux fois plus courte, 0,25 s, soit le temps que le souffle met à t'atteindre. Une barrière levée plus tôt est déjà trop ancienne au moment du choc. Si tu pares, le Veilleur fonce, plante son épée dans la jambe avant du Colosse (−1 PV) puis revient à sa place. Si tu rates, le souffle te brûle (−1 PV).</p>
+    <p>Le Colosse aspire l'air pendant 0,6 s, puis crache un souffle de flamme. C'est l'attaque rapide : la fenêtre de parade est deux fois plus courte, 0,17 s, soit le temps que le souffle met à t'atteindre. Une barrière levée plus tôt est déjà trop ancienne au moment du choc. Si tu pares, le Veilleur fonce, plante son épée dans la jambe avant du Colosse (−1 PV) puis revient à sa place. Si tu rates, le souffle te brûle (−1 PV).</p>
   </section>
   <section class="rule" aria-labelledby="rt4">
     <p class="eyebrow" id="rt4">Attaque 4 sur 4 · La fureur</p>
@@ -170,7 +170,7 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 (()=>{
 'use strict';
 const W=960,H=540,DECK=410,PX=250,BX=730;
-const T={windup:1.0,strike:0.5,barrier:0.5,recovery:0.7,rebound:0.42,stagger:1.5,sw1w:.9,sw1:.3,swgap:.45,sw2w:.4,sw2:.3,swrec:.8,cast:.5,orb:.45,fbw:.5,fb:.25,fbwin:.25,fbrec:.9,dashIn:.35,stab:.22,dashHold:.15,dashOut:.4,legstun:1.5,fli:.6,flo:.25,flwin:.25,flrec:.8,dash:.28,back:.5,ringAt:.5};
+const T={windup:.75,strike:0.5,barrier:0.333,recovery:0.7,rebound:0.42,stagger:.75,sw1w:.9,sw1:.3,swgap:.45,sw2w:.4,sw2:.3,swrec:.8,cast:.5,orb:.45,fbw:.5,fb:.25,fbwin:.25,fbrec:.9,dashIn:.35,stab:.22,dashHold:.15,dashOut:.4,legstun:1.5,fli:.6,flo:.25,flwin:.167,flrec:.8,dash:.28,back:.5,ringAt:.5};
 const DMG_GRAB=1,DMG_PARRY=1,DMG_SWORD=1,DMG_ORB=1,DMG_FLAME=1,DMG_STAB=1,LIFT_MAX=170;
 const DISPLAY='"Big Shoulders Display",Impact,sans-serif';
 
@@ -179,7 +179,7 @@ const dpr=Math.min(2,window.devicePixelRatio||1);
 cv.width=W*dpr;cv.height=H*dpr;
 const $=id=>document.getElementById(id);
 const el={hpP:$('hpP'),hpB:$('hpB'),ov:$('ov'),eye:$('ovEye'),title:$('ovTitle'),stats:$('ovStats'),desc:$('ovDesc'),go:$('go'),ward:$('ward'),live:$('live'),help:$('optHelp'),snd:$('optSnd')};
-const prefs={help:true,sound:true};
+const prefs={help:false,sound:true};
 const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -384,7 +384,7 @@ function orbHit(){
   float('ORBE !',ORB_T[0]-70,ORB_T[1]-80,'#ffffff');
   tone(660,.5,'sine',.08,500);tone(200,.3,'square',.06,-120);roar();
   if(G.bhp<=0){b.s='dead';b.t=0;G.mode='won';G.endIn=1.4;say('Le Colosse est à genoux. Phase I terminée.')}
-  else{b.s='hurt';b.t=0;b.hurtT=2.2;say('Orbe de lumière en plein cœur.')}
+  else{b.s='hurt';b.t=0;b.hurtT=1.1;say('Orbe de lumière en plein cœur.')}
 }
 function resolveFlame(){
   const b=G.boss,p=G.pl;
@@ -414,7 +414,7 @@ function legHit(){
   tone(220,.25,'square',.08,-120);tone(90,.3,'sawtooth',.06,-40);roar();
   for(let i=0;i<26;i++){const L=rand(.4,.9);G.sparks.push({x:BX-36+rand(-14,14),y:DECK-58,vx:rand(-120,60),vy:-rand(160,420),g:-40,life:L,max:L,col:['#ffc15a','#ff7a2b','#fff2b8'][i%3],sz:rand(4,9)})}
   if(G.bhp<=0){b.s='dead';b.t=0;G.mode='won';G.endIn=1.4;say('Le Colosse est à genoux. Phase I terminée.')}
-  else{b.s='hurt';b.t=0;b.hurtT=2;say(`Épée plantée dans la jambe du Colosse.`)}
+  else{b.s='hurt';b.t=0;b.hurtT=1;say(`Épée plantée dans la jambe du Colosse.`)}
 }
 function startFury(lvl){
   const b=G.boss;
@@ -477,7 +477,7 @@ function ringHit(){
   burst(BX-70,DECK-150,36,['#ffffff','#fff2b8','#bfeaff']);
   float('LUMIÈRE !',BX-110,DECK-250,'#ffffff');
   tone(660,.5,'sine',.08,500);roar();
-  b.s='hurt';b.t=0;b.hurtT=2.5;b.fury=0;
+  b.s='hurt';b.t=0;b.hurtT=1.25;b.fury=0;
   say('Le cercle de lumière frappe le Colosse.');
 }
 function bossStep(dt){
@@ -1200,7 +1200,7 @@ function render(){
 /* ================= PHASE II : la chute ================= */
 let Q=null;
 const QH=[250,300],QB=[705,285];
-const DG={act:.5,rec:.7,grace:.05,hurt:.38,drop:110};
+const DG={act:.333,rec:.7,grace:.05,hurt:.38,drop:110};
 const QA={
   claws:{hits:[{k:'clawA',at:.9},{k:'clawB',at:1.65}],cn:'stab',name:'Coups de griffe'},
   wings:{hits:[{k:'wave',at:1.0},{k:'wave',at:1.7},{k:'wave',at:2.4}],cn:'head',name:`Coup d'ailes`},
@@ -1212,7 +1212,7 @@ const RULES1=$('rules').innerHTML;
 const RULES2=`
 <section class="rule" aria-labelledby="rt">
   <p class="eyebrow" id="rt">Phase II · L'esquive</p>
-  <p>Plus de bâton : le Veilleur combat à l'épée. Le bouton unique lance une esquive en roulé-boulé : 0,5 s pendant lesquelles rien ne peut te toucher, puis 0,7 s de récupération où tu ne peux plus esquiver, comme la barrière de la phase I. Une esquive réussie libère aussitôt le bouton pour le coup suivant. Esquive donc dans les 0,5 s avant l'impact, pas en rafale. Les PV sont remis à fond : 4 pour toi, 10 pour le Colosse. Chaque coup encaissé et chaque riposte retire 1 PV. Pour riposter, il faut esquiver tous les coups de l'attaque.</p>
+  <p>Plus de bâton : le Veilleur combat à l'épée. Le bouton unique lance une esquive en roulé-boulé : 0,33 s pendant lesquelles rien ne peut te toucher, puis 0,7 s de récupération où tu ne peux plus esquiver, comme la barrière de la phase I. Une esquive réussie libère aussitôt le bouton pour le coup suivant. Esquive donc dans les 0,33 s avant l'impact, pas en rafale. Les PV sont remis à fond : 4 pour toi, 10 pour le Colosse. Chaque coup encaissé et chaque riposte retire 1 PV. Pour riposter, il faut esquiver tous les coups de l'attaque.</p>
 </section>
 <section class="rule" aria-labelledby="rt1">
   <p class="eyebrow" id="rt1">Attaque 1 sur 4 · Les griffes enflammées</p>
@@ -1423,7 +1423,7 @@ function qBoss(dt){
     case 'gap':if(b.t>=.55)qChainNext();break;
     case 'cn':qCnStep(dt);break;
     case 'fail':if(b.t>=1.0)qIdle();break;
-    case 'hurt':if(b.t>=1.1)qIdle();break;
+    case 'hurt':if(b.t>=.55)qIdle();break;
   }
 }
 function qChainNext(){const k=Q.chain.shift();Q.last=k;qLaunch(k)}
@@ -1446,7 +1446,7 @@ function qEnd(){
   el.title.textContent=win?`Le lac les engloutit.`:'Emporté par la chute.';
   el.stats.textContent='Esquives '+Q.parries+' · Coups subis '+Q.taken;
   el.stats.hidden=false;
-  el.desc.textContent=win?`Le Veilleur et le Colosse s'abîment dans l'eau noire. La phase III s'ouvrira dès que ses règles seront définies.`:`Attends le geste du Colosse puis esquive au dernier moment : l'esquive protège 0,5 s, puis tu dois attendre 0,7 s.`;
+  el.desc.textContent=win?`Le Veilleur et le Colosse s'abîment dans l'eau noire. La phase III s'ouvrira dès que ses règles seront définies.`:`Attends le geste du Colosse puis esquive au dernier moment : l'esquive protège 0,33 s, puis tu dois attendre 0,7 s.`;
   el.go.textContent=win?'Rejouer depuis la phase I':'Réessayer la phase II';
   el.ov.hidden=false;
   try{el.go.focus({preventScroll:true})}catch(e){}
