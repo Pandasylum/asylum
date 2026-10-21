@@ -45,6 +45,12 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 .track{height:10px;background:#0a070f;border:1px solid var(--line);overflow:hidden}
 .track i{display:block;height:100%;width:100%;background:var(--ward);transition:width .25s ease-out}
 .bar.boss .track i{background:var(--ember);margin-left:auto}
+.bar span b{margin-left:4px;color:var(--fg);font-variant-numeric:tabular-nums}
+.pips{display:flex;gap:4px}
+.pips span{flex:1;height:12px;background:#0a070f;border:1px solid var(--line)}
+.pips span.on{background:var(--ward);border-color:var(--ward)}
+.bar.boss .pips span.on{background:var(--ember);border-color:var(--ember)}
+.pips span.mark{border-bottom:3px solid var(--glow)}
 
 .stage{position:relative;aspect-ratio:16/9;width:100%;max-width:100%;border:1px solid var(--line);background:#0a070f;overflow:hidden;touch-action:manipulation;user-select:none;-webkit-user-select:none}
 .stage canvas{display:block;width:100%;height:100%}
@@ -97,8 +103,8 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
   </header>
 
   <section class="bars" aria-label="Points de vie">
-    <div class="bar"><span>Le Veilleur</span><div class="track"><i id="hpP"></i></div></div>
-    <div class="bar boss"><span>Colosse de braise</span><div class="track"><i id="hpB"></i></div></div>
+    <div class="bar"><span>Le Veilleur <b id="hpPn"></b></span><div class="pips" id="hpP" role="img" aria-label="Points de vie du Veilleur"></div></div>
+    <div class="bar boss"><span>Colosse de braise <b id="hpBn"></b></span><div class="pips" id="hpB" role="img" aria-label="Points de vie du Colosse"></div></div>
   </section>
 
   <div class="stage" id="stage">
@@ -108,7 +114,7 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
         <p class="eyebrow" id="ovEye">Phase I · Le pont</p>
         <h2 id="ovTitle">Tiens le pont.</h2>
         <p class="stats" id="ovStats" hidden></p>
-        <p class="long" id="ovDesc">Le Colosse arme sa chaîne pendant 1 seconde. Dès qu'elle part, tu as 0,5 seconde pour lever ton bâton. La barrière renvoie la chaîne dans sa tête. S'il frappe à l'épée, pare les deux coups pour répondre par une orbe de lumière.</p>
+        <p class="long" id="ovDesc">Le Colosse arme sa chaîne pendant 1 seconde. Dès qu'elle part, tu as 0,5 seconde pour lever ton bâton. La barrière renvoie la chaîne dans sa tête. S'il frappe à l'épée, pare les deux coups pour répondre par une orbe de lumière. Son souffle de flamme se pare deux fois plus vite, mais ouvre sa garde. Tu as 4 PV, le Colosse 10 : chaque coup encaissé et chaque riposte retire 1 PV.</p>
         <button class="btn" id="go" type="button">Commencer</button>
       </div>
     </div>
@@ -135,7 +141,21 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
     <div class="strip" role="img" aria-label="Armement, parade du premier coup, reprise, parade du second coup, puis orbe de lumière">
       <div class="s1" style="flex:7">Armement</div><div class="s2 hit" style="flex:5">Coup 1</div><div class="s1" style="flex:6.5">Reprise</div><div class="s2 hit" style="flex:5">Coup 2</div>
     </div>
-    <p>Le Colosse allume une épée de feu dans son autre main et frappe deux fois : d'abord à l'horizontale, puis à la verticale. Chaque coup se pare comme la chaîne, barrière levée au moment de l'impact, dans les 0,5 s qui le précèdent. Une parade réussie libère aussitôt le bâton, mais une barrière levée trop tôt retombe avant le second coup. Si tu pares les deux coups, le Veilleur lance une orbe de lumière sur le Colosse (−35 PV). Une seule parade ne déclenche rien.</p>
+    <p>Le Colosse allume une épée de feu dans son autre main et frappe deux fois : d'abord à l'horizontale, puis à la verticale. Chaque coup se pare comme la chaîne, barrière levée au moment de l'impact, dans les 0,5 s qui le précèdent. Une parade réussie libère aussitôt le bâton, mais une barrière levée trop tôt retombe avant le second coup. Si tu pares les deux coups, le Veilleur lance une orbe de lumière sur le Colosse (−1 PV). Une seule parade ne déclenche rien.</p>
+  </section>
+  <section class="rule" aria-labelledby="rt3">
+    <p class="eyebrow" id="rt3">Attaque 3 sur 4 · Le souffle de flamme</p>
+    <div class="strip" role="img" aria-label="Inspiration 0,6 seconde, puis fenêtre de parade de 0,25 seconde, puis riposte">
+      <div class="s1" style="flex:6">Inspiration</div><div class="s2 hit" style="flex:2.5">0,25 s</div><div class="s1" style="flex:4;background:rgba(240,232,223,.06);color:var(--muted);border:1px solid var(--line);border-left:0">Fente</div>
+    </div>
+    <p>Le Colosse aspire l'air pendant 0,6 s, puis crache un souffle de flamme. C'est l'attaque rapide : la fenêtre de parade est deux fois plus courte, 0,25 s, soit le temps que le souffle met à t'atteindre. Une barrière levée plus tôt est déjà trop ancienne au moment du choc. Si tu pares, le Veilleur fonce, plante son épée dans la jambe avant du Colosse (−1 PV) puis revient à sa place. Si tu rates, le souffle te brûle (−1 PV).</p>
+  </section>
+  <section class="rule" aria-labelledby="rt4">
+    <p class="eyebrow" id="rt4">Attaque 4 sur 4 · La fureur</p>
+    <div class="strip" role="img" aria-label="Rugissement, quatre jets de flamme à parer, puis cercle de lumière">
+      <div class="s1" style="flex:10">Colère</div><div class="s2 hit" style="flex:9">Jet 1</div><div class="s2 hit" style="flex:9">Jet 2</div><div class="s2 hit" style="flex:9">Jet 3</div><div class="s2 hit" style="flex:9">Jet 4</div><div class="s1" style="flex:8;background:rgba(240,232,223,.06);color:var(--muted);border:1px solid var(--line);border-left:0">Éclat</div>
+    </div>
+    <p>La fureur se déclenche à coup sûr quand le Colosse tombe à 5 PV, puis à 1 PV. Il s'embrase, rugit 1 s, puis 4 jets de flamme jaillissent de son corps, un toutes les 0,9 s. Chaque jet se pare comme la chaîne. À 5 PV, les 4 parades font frapper le sol au Veilleur : un cercle de lumière balaie le pont et touche le Colosse (−1 PV). À 1 PV, un rocher enflammé tombe du ciel après le 4e jet. Si tu pares tout, le pont cède sous le Colosse, qui tombe, et sa chaîne t'entraîne dans la phase II. Un jet manqué retire 1 PV et annule la contre-attaque. Tant que ses PV n'ont pas changé, la fureur recommence à l'assaut suivant.</p>
   </section>
   <p class="sr" id="live" aria-live="polite"></p>
 </main>
@@ -144,8 +164,8 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 (()=>{
 'use strict';
 const W=960,H=540,DECK=410,PX=250,BX=730;
-const T={windup:1.0,strike:0.5,barrier:0.5,recovery:0.7,rebound:0.42,stagger:1.5,sw1w:.9,sw1:.3,swgap:.45,sw2w:.4,sw2:.3,swrec:.8,cast:.5,orb:.45};
-const DMG_GRAB=25,DMG_PARRY=20,DMG_SWORD=20,DMG_ORB=35,LIFT_MAX=170;
+const T={windup:1.0,strike:0.5,barrier:0.5,recovery:0.7,rebound:0.42,stagger:1.5,sw1w:.9,sw1:.3,swgap:.45,sw2w:.4,sw2:.3,swrec:.8,cast:.5,orb:.45,fbw:.5,fb:.25,fbwin:.25,fbrec:.9,dashIn:.35,stab:.22,dashHold:.15,dashOut:.4,legstun:1.5,fli:.6,flo:.25,flwin:.25,flrec:.8,dash:.28,back:.5,ringAt:.5};
+const DMG_GRAB=1,DMG_PARRY=1,DMG_SWORD=1,DMG_ORB=1,DMG_FLAME=1,DMG_STAB=1,LIFT_MAX=170;
 const DISPLAY='"Big Shoulders Display",Impact,sans-serif';
 
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
@@ -166,6 +186,10 @@ const BAR=[PX+116,DECK-76],CHEST=[PX+14,DECK-72],HEAD=[BX-3,DECK-275];
 const IDLE2=[BX+114,DECK-68],S2=[BX+100,DECK-195],SW_LEN=230;
 const SW1_BACK=[BX+110,DECK-130],SW1_HIT=[BX-134,DECK-76],SW2_UP=[BX+80,DECK-190],SW2_HIT=[556,138];
 const VHIT=[352,244],ORB_T=[BX-30,DECK-190];
+const MOUTH=[BX-44,DECK-258],STAB_X=596;
+const JET_O=[[BX-30,DECK-215],[BX-100,DECK-250],[BX-110,DECK-110],[BX-60,DECK-150]];
+const RK=[PX+70,DECK-165],RK_S=[PX+330,-70];
+const AURA=[[-125,-206],[-100,-228],[-70,-236],[-40,-312],[-10,-312],[20,-312],[40,-306],[70,-236],[100,-228],[125,-206],[-110,-170],[110,-170],[-80,-130],[80,-130],[-70,-90],[70,-90],[-60,-14],[60,-14],[0,-216],[-95,-216],[95,-216],[-30,-180],[30,-180],[0,-150]];
 
 let G=null,AC=null;
 
@@ -195,12 +219,12 @@ const say=t=>{el.live.textContent=t};
 function makeEmbers(){return Array.from({length:70},()=>({x:rand(0,W),y:rand(0,H),v:rand(14,48),s:rand(1,2.6),ph:rand(0,6.28)}))}
 function newGame(){
   const emb=G?G.embers:makeEmbers();
-  G={mode:'title',time:0,php:100,bhp:100,parries:0,grabs:0,
-     boss:{s:'idle',t:0,wait:1.5},pl:{s:'ready',t:0,deny:0},
-     sparks:[],rings:[],floats:[],trail:[],swTrail:[],sw:{p1:false,p2:false},atk:{last:'',n:0},kick:0,embers:emb,
+  G={mode:'title',time:0,php:4,bhp:10,parries:0,grabs:0,
+     boss:{s:'idle',t:0,wait:1.5},pl:{s:'ready',t:0,deny:0,x:PX},
+     sparks:[],rings:[],floats:[],trail:[],swTrail:[],sw:{p1:false,p2:false},atk:{last:'',n:0},kick:0,wound:0,p2:false,fy:null,jf:null,fin:null,ringFx:null,embers:emb,
      shake:0,flash:0,hurt:0,hitstop:0,recoil:0,endIn:0};
 }
-function toIdle(){const b=G.boss;b.s='idle';b.t=0;b.wait=rand(1.2,2.2)}
+function toIdle(){const b=G.boss;b.s='idle';b.t=0;b.fury=0;b.wait=rand(1.2,2.2)}
 
 function start(){
   if(G.mode==='play')return;
@@ -222,11 +246,11 @@ function press(){
 }
 function showEnd(){
   const win=G.mode==='won';
-  el.eye.textContent=win?'Phase I terminée':'Défaite';
-  el.title.textContent=win?'Le Colosse plie un genou.':'Écrasé sur la pierre.';
+  el.eye.textContent=win?(G.p2?'Transition · Phase II':'Phase I terminée'):'Défaite';
+  el.title.textContent=win?(G.p2?`Le Colosse t'entraîne dans la chute.`:'Le Colosse plie un genou.'):'Écrasé sur la pierre.';
   el.stats.textContent='Parades '+G.parries+' · Coups subis '+G.grabs;
   el.stats.hidden=false;
-  el.desc.textContent=win?`La phase II s'ouvrira avec ses prochaines attaques.`:`Attends l'armement, puis lève ton bâton dès que la chaîne part.`;
+  el.desc.textContent=win?(G.p2?'Le sol cède et la chaîne se referme sur le Veilleur. La phase II commence.':`La phase II s'ouvrira avec ses prochaines attaques.`):`Attends l'armement, puis lève ton bâton dès que la chaîne part.`;
   el.go.textContent=win?'Rejouer la phase I':'Réessayer';
   el.ov.hidden=false;
   try{el.go.focus({preventScroll:true})}catch(e){}
@@ -240,6 +264,7 @@ function float(txt,x,y,col){G.floats.push({txt,x,y,col,life:.9,max:.9})}
 
 /* ---------- game logic ---------- */
 function liftAmt(){
+  if(G.pl.s==='final')return -clamp01((G.pl.t-2.6)/.55)*430;
   const b=G.boss;
   if(b.s==='lift')return b.t<.12?0:LIFT_MAX*eo(clamp01((b.t-.12)/.43));
   if(b.s==='hold')return LIFT_MAX;
@@ -281,12 +306,15 @@ function slamHit(){
 }
 function startAttack(){
   const b=G.boss,a=G.atk;
-  let k=a.last===''?'whip':(Math.random()<.5?'whip':'sword');
-  if(k===a.last&&a.n>=2)k=k==='whip'?'sword':'whip';
+  if(G.bhp===1||G.bhp===5){startFury(G.bhp);return}
+  const kinds=['whip','sword','flame'];
+  let k=a.last===''?'whip':kinds[Math.floor(Math.random()*3)];
+  if(k===a.last&&a.n>=2){const o=kinds.filter(x=>x!==k);k=o[Math.floor(Math.random()*2)]}
   a.n=(k===a.last)?a.n+1:1;a.last=k;
   b.t=0;
   if(k==='whip'){b.s='windup';tone(110,.5,'sawtooth',.03,60)}
-  else{b.s='sw1w';G.sw.p1=false;G.sw.p2=false;tone(180,.6,'sawtooth',.04,140)}
+  else if(k==='sword'){b.s='sw1w';G.sw.p1=false;G.sw.p2=false;tone(180,.6,'sawtooth',.04,140)}
+  else{b.s='fl_in';tone(90,.6,'sawtooth',.05,90)}
 }
 function parrySuccess(x,y){
   const p=G.pl;
@@ -330,7 +358,100 @@ function orbHit(){
   float('ORBE !',ORB_T[0]-70,ORB_T[1]-80,'#ffffff');
   tone(660,.5,'sine',.08,500);tone(200,.3,'square',.06,-120);
   if(G.bhp<=0){b.s='dead';b.t=0;G.mode='won';G.endIn=1.4;say('Le Colosse est à genoux. Phase I terminée.')}
-  else{b.s='stagger';b.t=0;b.stagT=2.2;say('Orbe de lumière en plein cœur.')}
+  else{b.s='hurt';b.t=0;b.hurtT=2.2;say('Orbe de lumière en plein cœur.')}
+}
+function resolveFlame(){
+  const b=G.boss,p=G.pl;
+  const warded=p.s==='barrier'&&p.t<=T.flwin+.03;
+  if(warded){
+    parrySuccess(BAR[0],BAR[1]);
+    p.s='dash';p.t=0;b.s='fl_stab';b.t=0;
+    float('RIPOSTE !',BAR[0]+60,BAR[1]-170,'#ffd166');
+    tone(500,.3,'sawtooth',.05,300);
+    say('Souffle paré. Le Veilleur fonce sur le Colosse.');
+  }else{
+    G.php=Math.max(0,G.php-DMG_FLAME);G.grabs++;
+    G.shake=reduce?0:10;G.hurt=.4;
+    burst(PX+10,DECK-70,24,['#ffc15a','#ff7a2b','#ff4d1a']);
+    float('BRÛLÉ !',PX,DECK-190,'#ff8a6b');
+    tone(120,.5,'sawtooth',.1,-60);
+    p.s='down';p.t=0;p.downT=.9;b.s='fl_rec';b.t=0;
+    say('Brûlé par le souffle de flamme.');
+    if(G.php<=0){G.mode='lost';G.endIn=1.1;say('Tu es à terre. Défaite.')}
+  }
+}
+function legHit(){
+  const b=G.boss;
+  G.bhp=Math.max(0,G.bhp-DMG_STAB);G.recoil=.6;G.shake=reduce?0:11;G.hitstop=.1;G.flash=.3;G.wound=1.6;
+  burst(BX-36,DECK-58,26,['#ffc15a','#ff7a2b','#ffffff']);
+  float('PLANTÉ !',BX-110,DECK-120,'#ffd166');
+  tone(220,.25,'square',.08,-120);tone(90,.3,'sawtooth',.06,-40);
+  if(G.bhp<=0){b.s='dead';b.t=0;G.mode='won';G.endIn=1.4;say('Le Colosse est à genoux. Phase I terminée.')}
+  else{b.s='hurt';b.t=0;b.hurtT=2;say(`Épée plantée dans la jambe du Colosse.`)}
+}
+function startFury(lvl){
+  const b=G.boss;
+  G.fy={lvl,i:0,miss:0,ok:[false,false,false,false,false]};
+  b.s='fy_roar';b.t=0;b.fury=lvl;
+  float(lvl===1?'FUREUR DÉMESURÉE !':'FUREUR !',BX-40,DECK-335,'#ffb04a');
+  tone(70,1,'sawtooth',.08,40);
+  say('Le Colosse entre en fureur.');
+}
+function hurtPlayer(label){
+  const p=G.pl;
+  G.php=Math.max(0,G.php-1);G.grabs++;G.shake=reduce?0:10;G.hurt=.35;
+  burst(PX+10,DECK-70,22,['#ffc15a','#ff7a2b','#ff4d1a']);dust(PX,DECK);
+  float(label,PX,DECK-190,'#ff8a6b');
+  tone(110,.4,'sawtooth',.1,-60);
+  p.s='down';p.t=0;p.downT=.55;
+  say('Touché.');
+  if(G.php<=0){G.mode='lost';G.endIn=1.1;say('Tu es à terre. Défaite.')}
+}
+function resolveJet(){
+  const b=G.boss,p=G.pl,F=G.fy;
+  const warded=p.s==='barrier'||(p.s==='recover'&&p.t<.06);
+  F.ok[F.i]=warded;
+  G.jf={o:JET_O[F.i%4],t:.22};
+  if(warded){parrySuccess(BAR[0],BAR[1])}
+  else{F.miss++;hurtPlayer('BRÛLÉ !')}
+  F.i++;
+  if(F.i<4){b.s='fy_gap';b.t=0}
+  else if(F.lvl===1){b.s='rk_t';b.t=0}
+  else endFury();
+  if(G.mode!=='play'&&b.s!=='fy_fail')endFury();
+}
+function resolveRock(){
+  const p=G.pl,F=G.fy;
+  const warded=p.s==='barrier'||(p.s==='recover'&&p.t<.06);
+  F.ok[4]=warded;F.i=5;
+  burst(RK[0],RK[1],warded?20:34,['#ff9a3c','#ffc15a','#6b5a63','#ffffff']);
+  if(warded){parrySuccess(RK[0],RK[1]);say('Rocher paré.')}
+  else{F.miss++;hurtPlayer('ÉCRASÉ !')}
+  endFury();
+}
+function endFury(){
+  const b=G.boss,p=G.pl,F=G.fy;
+  if(G.mode!=='play'||F.miss>0){b.s='fy_fail';b.t=0;return}
+  if(F.lvl===5){
+    b.s='fy_cast';b.t=0;p.s='ring';p.t=0;p.fired=false;
+    say('Fureur parée. Le Veilleur frappe le sol.');
+  }else startFinal();
+}
+function startFinal(){
+  const b=G.boss,p=G.pl;
+  b.s='fin';b.t=0;p.s='final';p.t=0;p.fired=true;
+  G.fin={a:false,b:false,c:false};
+  G.mode='won';G.p2=true;G.endIn=3.9;
+  say('Le Veilleur frappe le sol.');
+}
+function ringHit(){
+  const b=G.boss;
+  G.bhp=Math.max(0,G.bhp-1);G.recoil=1;G.shake=reduce?0:12;G.hitstop=.12;G.flash=.6;
+  burst(BX-70,DECK-150,36,['#ffffff','#fff2b8','#bfeaff']);
+  float('LUMIÈRE !',BX-110,DECK-250,'#ffffff');
+  tone(660,.5,'sine',.08,500);
+  b.s='hurt';b.t=0;b.hurtT=2.5;b.fury=0;
+  say('Le cercle de lumière frappe le Colosse.');
 }
 function bossStep(dt){
   const b=G.boss;b.t+=dt;
@@ -351,12 +472,47 @@ function bossStep(dt){
     case 'sw2':if(b.t>=T.sw2)resolveSword(2);break;
     case 'swrec':if(b.t>=T.swrec)toIdle();break;
     case 'orb':if(b.t>=T.cast+T.orb)orbHit();break;
+    case 'fl_in':if(b.t>=T.fli){b.s='fl_out';b.t=0;tone(200,.25,'sawtooth',.07,-120)}break;
+    case 'fl_out':if(b.t>=T.flo)resolveFlame();break;
+    case 'fl_rec':if(b.t>=T.flrec)toIdle();break;
+    case 'fl_stab':if(b.t>=T.dash+.1)legHit();break;
+    case 'hurt':if(b.t>=b.hurtT)toIdle();break;
+    case 'fy_roar':if(b.t>=1.0){b.s='fy_t';b.t=0}break;
+    case 'fy_t':if(b.t>=.45){b.s='fy_j';b.t=0;tone(220,.15,'sawtooth',.06,-120)}break;
+    case 'fy_j':if(b.t>=.3)resolveJet();break;
+    case 'fy_gap':if(b.t>=.15){b.s='fy_t';b.t=0}break;
+    case 'rk_t':if(b.t>=.5){b.s='rk_j';b.t=0;tone(150,.5,'sawtooth',.05,-80)}break;
+    case 'rk_j':if(b.t>=.55)resolveRock();break;
+    case 'fy_cast':if(b.t>=T.ringAt+.55)ringHit();break;
+    case 'fy_fail':if(b.t>=.9)toIdle();break;
+    case 'fin':{
+      const F=G.fin;
+      if(!F.a&&b.t>=.5){
+        F.a=true;G.shake=reduce?0:8;G.flash=.35;
+        dust(PX,DECK);burst(PX,DECK,24,['#ffffff','#fff2b8','#bfeaff']);
+        float(`Ici s'arrête ta route !`,PX+190,DECK-250,'#ffffff');
+        tone(110,.5,'sine',.12,-50);tone(700,.6,'sine',.06,500);
+      }
+      if(!F.b&&b.t>=1.1){
+        F.b=true;G.bhp=0;G.shake=reduce?0:14;
+        burst(BX,DECK,40,['#ffc15a','#ff7a2b','#9a8a9e']);
+        tone(70,.8,'sawtooth',.1,-30);
+      }
+      if(!F.c&&b.t>=2.0){F.c=true;tone(300,.2,'sawtooth',.07,-150);say(`Le Colosse tombe, mais sa chaîne saisit le Veilleur.`)}
+      break;}
   }
+}
+function pips(box,n,max,marks){
+  if(box.children.length!==max){
+    box.textContent='';
+    for(let i=0;i<max;i++){const s=document.createElement('span');if(marks.includes(i))s.className='mark';box.appendChild(s)}
+  }
+  for(let i=0;i<max;i++)box.children[i].classList.toggle('on',i<n);
 }
 let lastP=-1,lastB=-1;
 function hud(){
-  if(G.php!==lastP){el.hpP.style.width=Math.max(0,G.php)+'%';lastP=G.php}
-  if(G.bhp!==lastB){el.hpB.style.width=Math.max(0,G.bhp)+'%';lastB=G.bhp}
+  if(G.php!==lastP){pips(el.hpP,G.php,4,[]);$('hpPn').textContent=G.php+'/4';lastP=G.php}
+  if(G.bhp!==lastB){pips(el.hpB,G.bhp,10,[0,4]);$('hpBn').textContent=G.bhp+'/10';lastB=G.bhp}
 }
 function step(dt){
   G.time+=dt;
@@ -364,7 +520,7 @@ function step(dt){
   for(let i=G.sparks.length-1;i>=0;i--){const s=G.sparks[i];s.life-=dt;if(s.life<=0){G.sparks.splice(i,1);continue}s.vy+=s.g*dt;s.x+=s.vx*dt;s.y+=s.vy*dt}
   for(let i=G.rings.length-1;i>=0;i--){G.rings[i].life-=dt;if(G.rings[i].life<=0)G.rings.splice(i,1)}
   for(let i=G.floats.length-1;i>=0;i--){G.floats[i].life-=dt;if(G.floats[i].life<=0)G.floats.splice(i,1)}
-  G.shake=Math.max(0,G.shake-dt*45);G.flash=Math.max(0,G.flash-dt*2.2);G.hurt=Math.max(0,G.hurt-dt*1.6);G.recoil=Math.max(0,G.recoil-dt*3.5);G.kick=Math.max(0,G.kick-dt*5);
+  G.shake=Math.max(0,G.shake-dt*45);G.flash=Math.max(0,G.flash-dt*2.2);G.hurt=Math.max(0,G.hurt-dt*1.6);G.recoil=Math.max(0,G.recoil-dt*3.5);G.kick=Math.max(0,G.kick-dt*5);G.wound=Math.max(0,G.wound-dt*.5);
   if(G.endIn>0){G.endIn-=dt;if(G.endIn<=0)showEnd()}
   if(G.hitstop>0){G.hitstop-=dt;return}
   const p=G.pl;p.t+=dt;p.deny=Math.max(0,p.deny-dt);
@@ -372,6 +528,22 @@ function step(dt){
   else if(p.s==='recover'&&p.t>=T.recovery){p.s='ready';p.t=0}
   else if(p.s==='down'&&G.mode==='play'&&p.t>=(p.downT||.9)){p.s='ready';p.t=0}
   else if(p.s==='cast'&&p.t>=T.cast+T.orb){p.s='ready';p.t=0}
+  else if(p.s==='dash'&&p.t>=T.dash){p.s='stab';p.t=0}
+  else if(p.s==='stab'&&p.t>=.3){p.s='back';p.t=0}
+  else if(p.s==='back'&&p.t>=T.back){p.s='ready';p.t=0}
+  else if(p.s==='ring'&&p.t>=T.ringAt+.55){p.s='ready';p.t=0}
+  if(p.s==='dash')p.x=PX+(STAB_X-PX)*eo(clamp01(p.t/T.dash));
+  else if(p.s==='stab')p.x=STAB_X;
+  else if(p.s==='back')p.x=STAB_X-(STAB_X-PX)*es(clamp01(p.t/T.back));
+  else if(p.s==='final')p.x=p.t<2.25?PX:PX+(BX-20-PX)*es(clamp01((p.t-2.25)/.7));
+  else p.x=PX;
+  if(p.s==='dash')G.sparks.push({x:p.x,y:DECK-3,vx:rand(-60,-10),vy:-rand(10,60),g:200,life:.4,max:.4,col:'#9a8a9e',sz:rand(2,4)});
+  if(p.s==='ring'&&!p.fired&&p.t>=T.ringAt){
+    p.fired=true;G.ringFx={t:0};G.shake=reduce?0:9;G.flash=.3;dust(PX,DECK);
+    tone(120,.4,'sine',.12,-60);tone(800,.5,'sine',.05,400);
+  }
+  if(G.ringFx){G.ringFx.t+=dt;if(G.ringFx.t>.8)G.ringFx=null}
+  if(G.jf){G.jf.t-=dt;if(G.jf.t<=0)G.jf=null}
   bossStep(dt);
   hud();
 }
@@ -572,10 +744,12 @@ function drawWhip(h,tp,sag,heat){
 function drawBoss(){
   const b=G.boss,pz=pose(),t=G.time;
   let dx=0,dy=0;
-  if(b.s==='stagger'||b.s==='orb')dx=Math.sin(t*38)*3*clamp01(1-b.t/.6);
+  if(b.s==='stagger'||b.s==='orb'||b.s==='hurt'||b.s==='fy_roar')dx=Math.sin(t*38)*3*clamp01(1-b.t/.6);
+  if(b.s==='hurt')dy=Math.min(12,b.t*60)*clamp01((b.hurtT-b.t)/.4);
+  if(b.s==='fin'){dx=b.t<1.1?Math.sin(t*50)*3:0;if(b.t>=1.1){const fq=b.t-1.1;dy=fq*fq*520+fq*60}}
   if(b.s==='dead')dy=Math.min(56,b.t*150);
   const flick=.78+.22*Math.sin(t*9)+.08*Math.sin(t*23);
-  const warm=(b.s==='windup'||b.s==='strike'||b.s.startsWith('sw'))?1.25:1;
+  const warm=(b.s==='windup'||b.s==='strike'||b.s.startsWith('sw')||b.s.startsWith('fl_'))?1.25:(b.fury?1.7:1);
   const dead=b.s==='dead';
 
   ctx.save();ctx.translate(BX+dx,DECK+dy);
@@ -583,6 +757,15 @@ function drawBoss(){
   box(-76,-98,52,98,'#16111c','#33283d');box(24,-98,52,98,'#16111c','#33283d');
   box(-88,-14,70,14,'#1d1624','#33283d');box(18,-14,70,14,'#1d1624','#33283d');
   box(-82,-134,164,40,'#1a1421','#33283d');
+  if(G.wound>0){
+    const wa=clamp01(G.wound);
+    ctx.save();ctx.shadowColor='#ffb04a';ctx.shadowBlur=14;ctx.lineCap='round';
+    ctx.strokeStyle='rgba(255,220,140,'+wa+')';ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(-70,-58);ctx.lineTo(-52,-58);ctx.moveTo(-70,-58);ctx.lineTo(-60,-72);
+    ctx.moveTo(-70,-58);ctx.lineTo(-60,-44);ctx.moveTo(-70,-58);ctx.lineTo(-78,-66);
+    ctx.stroke();ctx.restore();
+  }
   const tg=ctx.createLinearGradient(0,-216,0,-128);tg.addColorStop(0,'#2d2335');tg.addColorStop(1,'#171220');
   poly([[-80,-128],[80,-128],[110,-216],[-110,-216]],tg,'#3a2d44');
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
@@ -600,7 +783,7 @@ function drawBoss(){
   box(-22,-246,44,32,'#171220');
 
   ctx.save();
-  if(dead)ctx.translate(8,16);else ctx.translate(G.recoil*14,-G.recoil*4);
+  if(dead)ctx.translate(8,16);else ctx.translate(G.recoil*14+(b.s==='fl_out'?-6:b.s==='fl_in'?4:0),-G.recoil*4+(b.s==='fl_in'?-8*clamp01(b.t/T.fli):0));
   poly([[-41,-246],[31,-246],[39,-290],[23,-310],[-33,-310],[-47,-290]],'#261d2e','#3f3149');
   box(-45,-298,84,10,'#1a1421');
   ctx.save();
@@ -610,6 +793,12 @@ function drawBoss(){
   ctx.restore();
   ctx.strokeStyle='#0d0910';ctx.lineWidth=2;
   for(const x of[-21,-7,7]){ctx.beginPath();ctx.moveTo(x,-266);ctx.lineTo(x,-254);ctx.stroke()}
+  if(b.s==='fl_in'||b.s==='fl_out'||b.s==='fy_roar'){
+    const mk=b.s==='fl_in'?clamp01(b.t/T.fli):1;
+    ctx.save();ctx.shadowColor='#ffb04a';ctx.shadowBlur=16;
+    ctx.fillStyle='rgba(255,'+Math.round(150+80*mk)+',70,'+(.4+.6*mk)+')';
+    ctx.fillRect(-36,-268,38,16);ctx.restore();
+  }
   ctx.save();ctx.shadowColor='#ff7a2b';ctx.shadowBlur=10;
   for(let i=0;i<5;i++){
     const x=-27+i*12,h=dead?8:22+14*Math.abs(Math.sin(t*6+i*1.7));
@@ -620,6 +809,7 @@ function drawBoss(){
   ctx.restore();
   ctx.restore();
 
+  if(b.fury){ctx.save();ctx.translate(BX+dx,DECK+dy);drawAura(b.fury);ctx.restore()}
   const S=[BX-100+dx,DECK-195+dy],h=pz.hand;
   limb(S,[(S[0]+h[0])/2-24,(S[1]+h[1])/2+30],h,28);
   ctx.fillStyle='#2b2233';ctx.strokeStyle='#4a3a55';ctx.lineWidth=3;
@@ -641,11 +831,13 @@ function drawBoss(){
 }
 
 function drawPlayer(){
-  const p=G.pl,lift=liftAmt(),up=p.s==='barrier'||p.s==='cast',r=up?clamp01(p.t/.08):0;
+  const p=G.pl,lift=liftAmt(),up=p.s==='barrier'||p.s==='cast'||p.s==='ring'||p.s==='final';
+  let r=up?clamp01(p.t/.08):0;
+  if((p.s==='ring'||p.s==='final')&&p.t>=.5&&p.t<.72)r=.02;
   ctx.fillStyle='rgba(0,0,0,.38)';
-  ctx.beginPath();ctx.ellipse(PX,DECK+1,30*(1-lift/400),5,0,0,6.283);ctx.fill();
+  ctx.beginPath();ctx.ellipse(p.x,DECK+1,30*(1-lift/400),5,0,0,6.283);ctx.fill();
 
-  ctx.save();ctx.translate(PX,DECK-lift);
+  ctx.save();ctx.translate(p.x,DECK-lift);
   if(lift>0||p.s==='grabbed')ctx.rotate(.42*lift/LIFT_MAX+(p.s==='grabbed'?Math.sin(G.time*22)*.03:0));
   if(p.s==='down'){ctx.rotate(.12);ctx.scale(1,.82)}
 
@@ -664,11 +856,18 @@ function drawPlayer(){
   ctx.beginPath();ctx.arc(3,-103,1.8,0,6.283);ctx.fill();
   ctx.beginPath();ctx.arc(11,-103,1.8,0,6.283);ctx.fill();
 
-  const hand=[26,-62-6*r],sb=[26,-2-58*r],st=[30+18*r,-140-26*r];
+  const dashing=p.s==='dash'||p.s==='stab'||p.s==='back';
+  const thrust=p.s==='stab'?(p.t<.1?es(p.t/.1):p.t<.22?1:1-clamp01((p.t-.22)/.08)):0;
+  const hand=dashing?[28+24*thrust,-58]:[26,-62-6*r],sb=dashing?[-8,-30]:[26,-2-58*r],st=dashing?[-46,-130]:[30+18*r,-140-26*r];
   ctx.lineCap='round';
   ctx.strokeStyle='#323f5e';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(8,-84);ctx.lineTo(hand[0],hand[1]);ctx.stroke();
   ctx.strokeStyle='#6e5238';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(sb[0],sb[1]);ctx.lineTo(st[0],st[1]);ctx.stroke();
   ctx.fillStyle='#cdb69a';ctx.beginPath();ctx.arc(hand[0],hand[1],5,0,6.283);ctx.fill();
+  if(dashing){
+    ctx.strokeStyle='#e8eef6';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(hand[0],hand[1]);ctx.lineTo(hand[0]+60,hand[1]);ctx.stroke();
+    ctx.strokeStyle='#ffffff';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(hand[0]+6,hand[1]-1);ctx.lineTo(hand[0]+56,hand[1]-1);ctx.stroke();
+    ctx.strokeStyle='#cdb69a';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(hand[0]+3,hand[1]-9);ctx.lineTo(hand[0]+3,hand[1]+9);ctx.stroke();
+  }
   const cc=p.deny>0?'#ff6b6b':up?'#d8f4ff':(p.s==='recover'?'#3f6f86':'#7fc6e6');
   ctx.save();
   ctx.shadowColor=up?'#6fd3ff':'#2d6f8f';ctx.shadowBlur=up?22:8;ctx.fillStyle=cc;
@@ -720,6 +919,33 @@ function drawHints(){
       else{ctx.strokeStyle='rgba(240,232,223,.6)';ctx.lineWidth=2;ctx.stroke()}
     }
   }
+  if(b.s==='fl_in'||b.s==='fl_out'){
+    const tl=T.fli+T.flo,ela=b.s==='fl_in'?b.t:T.fli+b.t;
+    const rem=Math.max(0,tl-ela),inWin=rem<=T.flwin;
+    const k=inWin?rem/T.flwin:ela/(tl-T.flwin);
+    const x=PX-34,y=DECK-206,w=68,h=6;
+    ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(x-1,y-1,w+2,h+2);
+    ctx.fillStyle=inWin?'#6fd3ff':'rgba(255,122,43,.85)';ctx.fillRect(x,y,w*clamp01(k),h);
+  }
+  if(G.fy&&['fy_roar','fy_t','fy_j','fy_gap','rk_t','rk_j'].includes(b.s)){
+    const F=G.fy,n=F.lvl===1?5:4;
+    if(b.s==='fy_t'||b.s==='fy_j'||b.s==='rk_t'||b.s==='rk_j'){
+      const rk=b.s==='rk_t'||b.s==='rk_j',t1=rk?.5:.45,tl=t1+(rk?.55:.3);
+      const ela=(b.s==='fy_t'||b.s==='rk_t')?b.t:t1+b.t;
+      const rem=Math.max(0,tl-ela),inWin=rem<=T.barrier;
+      const k=inWin?rem/T.barrier:ela/(tl-T.barrier);
+      const x=PX-34,y=DECK-206,w=68,h=6;
+      ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(x-1,y-1,w+2,h+2);
+      ctx.fillStyle=inWin?'#6fd3ff':'rgba(255,122,43,.85)';ctx.fillRect(x,y,w*clamp01(k),h);
+    }
+    for(let i=0;i<n;i++){
+      const x=PX+(i-(n-1)/2)*18,y=DECK-220;
+      ctx.beginPath();ctx.arc(x,y,5,0,6.283);
+      if(i<F.i&&F.ok[i]){ctx.fillStyle='#6fd3ff';ctx.fill()}
+      else if(i<F.i){ctx.fillStyle='#ff5252';ctx.fill()}
+      else{ctx.strokeStyle='rgba(240,232,223,.6)';ctx.lineWidth=2;ctx.stroke()}
+    }
+  }
   if(b.s==='windup'||b.s==='strike'){
     const k=b.s==='windup'?b.t/T.windup:1-b.t/T.strike;
     const col=b.s==='windup'?'rgba(255,122,43,.85)':'#6fd3ff';
@@ -752,6 +978,150 @@ function drawFx(){
   ctx.globalAlpha=1;
 }
 
+function flameShape(front,al,wide){
+  const dx=front[0]-MOUTH[0],dy=front[1]-MOUTH[1],len=Math.hypot(dx,dy)||1;
+  const ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
+  ctx.save();ctx.globalAlpha=al;ctx.lineCap='round';
+  ctx.shadowColor='#ff7a2b';ctx.shadowBlur=26;
+  ctx.strokeStyle='rgba(255,100,30,.4)';ctx.lineWidth=14+34*wide;
+  ctx.beginPath();ctx.moveTo(MOUTH[0],MOUTH[1]);ctx.lineTo(front[0],front[1]);ctx.stroke();
+  ctx.shadowBlur=0;
+  for(let i=0;i<30;i++){
+    const s=i/29,d=len*s;
+    const w=(8+wide*40*s)*(.75+.25*Math.sin(G.time*30+i*1.9));
+    const off=Math.sin(G.time*26+i*2.3)*9*s;
+    ctx.fillStyle=i%3===0?'rgba(255,236,170,.9)':i%3===1?'rgba(255,150,50,.85)':'rgba(255,80,30,.8)';
+    ctx.beginPath();ctx.arc(MOUTH[0]+ux*d+nx*off,MOUTH[1]+uy*d+ny*off,w*.55,0,6.283);ctx.fill();
+  }
+  ctx.restore();
+}
+function drawFlame(){
+  const b=G.boss;
+  let front=null,al=1,wide=1;
+  if(b.s==='fl_out'){const q=clamp01(b.t/T.flo);front=lerp2(MOUTH,BAR,es(q));wide=.4+.6*q}
+  else if(b.s==='fl_stab'&&b.t<.25){front=BAR;al=1-b.t/.25}
+  else if(b.s==='fl_rec'&&b.t<.45){front=lerp2(BAR,CHEST,eo(clamp01(b.t/.15)));al=1-clamp01((b.t-.15)/.3)}
+  if(front)flameShape(front,al,wide);
+}
+function flameJet(o,front,al,wide){
+  const dx=front[0]-o[0],dy=front[1]-o[1],len=Math.hypot(dx,dy)||1;
+  const ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
+  ctx.save();ctx.globalAlpha=clamp01(al);ctx.lineCap='round';
+  ctx.shadowColor='#ff7a2b';ctx.shadowBlur=22;
+  ctx.strokeStyle='rgba(255,100,30,.4)';ctx.lineWidth=10+24*wide;
+  ctx.beginPath();ctx.moveTo(o[0],o[1]);ctx.lineTo(front[0],front[1]);ctx.stroke();
+  ctx.shadowBlur=0;
+  for(let i=0;i<22;i++){
+    const s=i/21,d=len*s;
+    const w=(7+wide*26*s)*(.75+.25*Math.sin(G.time*30+i*1.9));
+    const off=Math.sin(G.time*26+i*2.3)*7*s;
+    ctx.fillStyle=i%3===0?'rgba(255,236,170,.9)':i%3===1?'rgba(255,150,50,.85)':'rgba(255,80,30,.8)';
+    ctx.beginPath();ctx.arc(o[0]+ux*d+nx*off,o[1]+uy*d+ny*off,w*.55,0,6.283);ctx.fill();
+  }
+  ctx.restore();
+}
+function drawJets(){
+  const b=G.boss,F=G.fy;
+  if(F&&b.s==='fy_t'){
+    const k=clamp01(b.t/.45),o=JET_O[F.i%4],r=10+36*k;
+    ctx.save();
+    const g=ctx.createRadialGradient(o[0],o[1],0,o[0],o[1],r);
+    g.addColorStop(0,'rgba(255,255,220,'+(.5+.5*k)+')');g.addColorStop(1,'rgba(255,110,30,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(o[0],o[1],r,0,6.283);ctx.fill();
+    ctx.restore();
+  }
+  if(F&&b.s==='fy_j'){
+    const q=clamp01(b.t/.3),o=JET_O[F.i%4];
+    flameJet(o,lerp2(o,BAR,es(q)),1,.3+.7*q);
+  }
+  if(G.jf)flameJet(G.jf.o,BAR,G.jf.t/.22,1);
+}
+function drawRock(){
+  const b=G.boss;
+  if(b.s==='rk_t'){
+    const k=clamp01(b.t/.5);
+    ctx.save();
+    const g=ctx.createRadialGradient(RK_S[0],8,0,RK_S[0],8,150);
+    g.addColorStop(0,'rgba(255,120,40,'+(.6*k)+')');g.addColorStop(1,'rgba(255,120,40,0)');
+    ctx.fillStyle=g;ctx.fillRect(RK_S[0]-170,0,340,170);
+    ctx.fillStyle='rgba(255,170,70,'+(.8*k)+')';
+    for(let i=0;i<8;i++){
+      const ex=RK_S[0]-80+i*23+Math.sin(G.time*3+i)*6,ey=((G.time*140+i*57)%160);
+      ctx.fillRect(ex,ey,3,3);
+    }
+    ctx.restore();
+  }
+  if(b.s==='rk_j'){
+    const q=clamp01(b.t/.55),pos=lerp2(RK_S,RK,ei(q));
+    for(let i=1;i<=7;i++){
+      const pp=lerp2(RK_S,RK,ei(Math.max(0,q-i*.04)));
+      ctx.fillStyle='rgba(255,'+(140+i*10)+',50,'+(.5-i*.06)+')';
+      ctx.beginPath();ctx.arc(pp[0],pp[1],28-i*2.5,0,6.283);ctx.fill();
+    }
+    ctx.save();ctx.translate(pos[0],pos[1]);ctx.rotate(G.time*5);
+    ctx.shadowColor='#ff7a2b';ctx.shadowBlur=24;
+    ctx.fillStyle='#2a2028';ctx.strokeStyle='#ff9a3c';ctx.lineWidth=3;
+    ctx.beginPath();
+    [[-26,-8],[-14,-26],[8,-28],[26,-10],[24,14],[6,28],[-18,22]].forEach((c,i)=>i?ctx.lineTo(c[0],c[1]):ctx.moveTo(c[0],c[1]));
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.restore();
+  }
+}
+function drawRing(){
+  const R=G.ringFx;if(!R)return;
+  const q=clamp01(R.t/.55),rx=20+es(q)*(BX-PX-80),a=1-q*.3;
+  ctx.save();ctx.translate(PX,DECK-2);
+  ctx.globalAlpha=a;ctx.shadowColor='#bfeaff';ctx.shadowBlur=28;
+  ctx.strokeStyle='#ffffff';ctx.lineWidth=9;
+  ctx.beginPath();ctx.ellipse(0,0,rx,rx*.09+6,0,0,6.283);ctx.stroke();
+  ctx.strokeStyle='rgba(111,211,255,.7)';ctx.lineWidth=18;ctx.globalAlpha=a*.4;ctx.stroke();
+  ctx.restore();
+}
+function drawHole(){
+  const b=G.boss;if(b.s!=='fin'||b.t<1.1)return;
+  const k=es(clamp01((b.t-1.1)/.35)),x0=BX-140*k;
+  ctx.save();
+  const g=ctx.createLinearGradient(0,DECK-6,0,H);
+  g.addColorStop(0,'#14090c');g.addColorStop(1,'#6a2210');
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x0,DECK-6);
+  for(let i=1;i<=8;i++)ctx.lineTo(x0+i*35*k,DECK-6+(i%2?10:-2));
+  ctx.lineTo(BX+140*k,H);ctx.lineTo(x0,H);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+function drawCracks(){
+  const p=G.pl;if(p.s!=='final'||p.t<.5||G.boss.t>1.4)return;
+  const xe=PX+clamp01((p.t-.5)/.6)*(BX-PX);
+  ctx.save();ctx.lineCap='round';
+  ctx.strokeStyle='rgba(255,240,200,.95)';ctx.lineWidth=3;ctx.shadowColor='#ffd27a';ctx.shadowBlur=14;
+  ctx.beginPath();ctx.moveTo(PX+20,DECK-1);
+  for(let x=PX+20,i=0;x<xe;x+=18,i++)ctx.lineTo(x,DECK-1+(i%2?4:-1));
+  ctx.stroke();
+  ctx.strokeStyle='rgba(255,180,90,.8)';ctx.lineWidth=2;
+  for(let x=PX+50,i=0;x<xe;x+=60,i++){ctx.beginPath();ctx.moveTo(x,DECK);ctx.lineTo(x+8,DECK+14+(i%3)*6);ctx.stroke()}
+  ctx.restore();
+}
+function drawLash(){
+  const p=G.pl;if(p.s!=='final'||p.t<2.0)return;
+  const hand=[BX-40,DECK+40],chest=[p.x+14,DECK-72-liftAmt()];
+  const tip=lerp2(hand,chest,es(clamp01((p.t-2.0)/.25)));
+  drawWhip(hand,tip,30,1);
+}
+function drawAura(lvl){
+  const t=G.time,big=lvl===1?1.5:1;
+  ctx.save();
+  const rg=ctx.createRadialGradient(0,-170,20,0,-170,200*big);
+  rg.addColorStop(0,'rgba(255,140,50,.3)');rg.addColorStop(1,'rgba(255,100,30,0)');
+  ctx.fillStyle=rg;ctx.beginPath();ctx.arc(0,-170,200*big,0,6.283);ctx.fill();
+  AURA.forEach((q,i)=>{
+    const h=(26+22*Math.abs(Math.sin(t*9+i*1.7)))*big,w=(9+4*Math.abs(Math.sin(t*7+i)))*big;
+    ctx.fillStyle=lvl===1?(i%2?'rgba(255,240,190,.9)':'rgba(255,180,70,.9)'):(i%2?'rgba(255,196,90,.85)':'rgba(255,100,40,.85)');
+    ctx.beginPath();ctx.moveTo(q[0]-w,q[1]);
+    ctx.quadraticCurveTo(q[0]+Math.sin(t*6+i)*6,q[1]-h*.6,q[0],q[1]-h);
+    ctx.quadraticCurveTo(q[0]+Math.sin(t*5+i)*5,q[1]-h*.5,q[0]+w,q[1]);
+    ctx.closePath();ctx.fill();
+  });
+  ctx.restore();
+}
 function drawOrb(){
   const p=G.pl;if(p.s!=='cast')return;
   const cr=[PX+48,DECK-166],charge=p.t<T.cast;
@@ -790,12 +1160,13 @@ function render(){
   ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
   drawEmbers(0,70,1);
   ctx.drawImage(bgBridge,0,0,W,H);
-  drawBoss();drawPlayer();drawBarrier();drawOrb();drawHints();drawFx();
+  drawHole();drawBoss();drawCracks();drawPlayer();drawFlame();drawJets();drawRock();drawRing();drawLash();drawBarrier();drawOrb();drawHints();drawFx();
   drawEmbers(0,18,.9);
   ctx.restore();
   ctx.drawImage(vig,0,0,W,H);
   if(G.flash>0){ctx.fillStyle='rgba(255,255,255,'+G.flash+')';ctx.fillRect(0,0,W,H)}
   if(G.hurt>0){ctx.fillStyle='rgba(255,40,30,'+(G.hurt*.45)+')';ctx.fillRect(0,0,W,H)}
+  if(G.p2&&G.pl.s==='final'){const fa=clamp01((G.pl.t-2.9)/.8);if(fa>0){ctx.fillStyle='rgba(0,0,0,'+fa+')';ctx.fillRect(0,0,W,H)}}
 }
 
 /* ---------- input ---------- */
