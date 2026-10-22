@@ -39,7 +39,8 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 .phases{display:flex;gap:6px;margin:0;padding:0;list-style:none;font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
 .phases li{border:1px solid var(--line);color:var(--muted)}
 .phases button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;background:none;border:0;padding:5px 12px;cursor:pointer;min-width:38px}
-.phases li:not(.on) button:hover{color:var(--fg);background:rgba(255,255,255,.06)}
+.phases button:disabled{opacity:.4;cursor:not-allowed}
+.phases li:not(.on) button:hover:not(:disabled){color:var(--fg);background:rgba(255,255,255,.06)}
 .phases li.on{border-color:var(--ember);color:#1a0c04;background:var(--ember)}
 
 .bars{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px}
@@ -77,6 +78,7 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 
 .hright{display:flex;align-items:center;gap:10px}
 .mbtn{font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;background:none;border:1px solid var(--line);color:var(--muted);cursor:pointer}
+.mrow{display:flex;gap:8px;align-items:center}
 .mbtn:hover{color:var(--fg);background:rgba(255,255,255,.06)}
 .ov.menu{position:fixed;inset:0;z-index:50;padding:24px;background:radial-gradient(ellipse 80% 70% at 50% 110%,rgba(255,122,43,.38),transparent 62%),#08060d}
 .ov.clear{background:transparent;place-items:end center}
@@ -141,7 +143,8 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
   .stage{grid-area:stage;width:min(100%,calc((100dvh - 12px)*16/9));margin:0 auto}
   .controls{grid-area:controls;display:grid;gap:8px;align-self:end}
   .controls>*{width:100%;min-width:0}
-  .controls .mbtn{order:-1}
+  .controls .mrow{order:-1}
+  .mrow>*{flex:1}
   .ward{min-height:84px;font-size:20px;padding:4px 6px}
   .top .eyebrow{display:none}
   .hint,.opts{display:none}
@@ -213,9 +216,9 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
         <p class="tag">Le Veilleur affronte le Colosse de braise : sur le pont, dans le gouffre, puis au sommet.</p>
         <button class="btn ghost" id="mResume" type="button" hidden>Reprendre</button>
         <div class="mph" role="group" aria-label="Choisir la difficulté">
-          <button type="button" data-diff="easy"><b>Facile</b><span>Plus de marge</span></button>
+          <button type="button" data-diff="easy"><b>Facile</b><span>La marche tranquille</span></button>
           <button type="button" data-diff="normal" aria-pressed="true"><b>Normal</b><span>Le combat tel quel</span></button>
-          <button type="button" data-diff="hard" disabled><b>Difficile</b><span>Bientôt</span></button>
+          <button type="button" data-diff="hard"><b>Difficile</b><span>La vraie puissance du Colosse</span></button>
           <button type="button" data-diff="infernal" disabled><b>Infernal</b><span>Bientôt</span></button>
         </div>
         <p class="how">Un seul bouton : bloquer, esquiver, parer. Espace, flèche haut ou toucher l'écran. P pour la pause.</p>
@@ -233,8 +236,8 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 
   <div class="controls">
     <button class="ward" id="ward" type="button">Bloquer</button>
-    <button class="mbtn" id="pauseBtn" type="button">Pause</button>
-    <p class="hint">Espace, flèche haut, ou toucher l'écran · P pour la pause</p>
+    <div class="mrow"><button class="mbtn" id="pauseBtn" type="button">Pause</button><button class="mbtn" id="retryBtn" type="button">Réessayer</button></div>
+    <p class="hint">Espace, flèche haut, ou toucher l'écran · P pause · R réessayer</p>
     <div class="opts">
       <label for="optHelp"><input type="checkbox" id="optHelp"> Aide visuelle</label>
       <label for="optSnd"><input type="checkbox" id="optSnd" checked> Son</label>
@@ -248,14 +251,23 @@ h1{margin:2px 0 0;font-family:var(--font-display);font-weight:800;font-size:clam
 (()=>{
 'use strict';
 const W=960,H=540,DECK=410,PX=250,BX=730;
-/* Difficulté. php/bhp : PV du Veilleur/Colosse ; m : multiplicateur des fenêtres de parade et d'esquive ; u : PV du Colosse où se déclenchent les attaques de rage (le dernier assaut reste à 1) ;
-   jets : jets de feu de la Fureur en phase I ; easy : aides et allègements de la phase III, repères en cercle, fausse fin. */
+/* Difficulté. php/bhp : PV du Veilleur/Colosse ; m : multiplicateur des fenêtres de parade et d'esquive ; u : PV du Colosse où se déclenchent les attaques de rage en phases II et III ;
+   jets : jets de feu de la Fureur ; fury : PV du Colosse → type de fureur en phase I ; mk1/mk : repères sur la jauge du Colosse (phase I / phases II-III) ;
+   noHelp : pas d'aide visuelle (case masquée) ;
+   easy : aides et allègements, repères en cercle, fausse fin ;
+   hard : attaques en plus (double fouet, épée à 3 coups, souffles enchaînés, rages à séquences) ; fm : fenêtre du souffle ; rm : récupération après parade ;
+   t : durées de la phase I remplacées ; waitMin/waitMax : pause entre attaques ; chain : [PV, chance] d'un souffle enchaîné ; locked : phases II et III pas encore prêtes. */
 const DIFFS={
-  easy:{php:6,bhp:8,m:2,u:4,jets:2,easy:true},
-  normal:{php:4,bhp:10,m:1,u:5,jets:4,easy:false}
+  easy:{php:6,bhp:8,m:2,u:4,jets:2,easy:true,fury:{4:5,1:1},mk1:[0,3],mk:[0,3]},
+  normal:{php:4,bhp:10,m:1,u:5,jets:4,easy:false,fury:{5:5,1:1},mk1:[0,4],mk:[0,4]},
+  hard:{php:3,bhp:12,m:.6,fm:1,rm:1.2,u:8,jets:4,easy:false,hard:true,noHelp:true,locked:true,fury:{8:5,4:6,1:1},mk1:[0,3,7],mk:[0,7],
+        t:{windup:.5,strike:.42,sw1w:.75,sw1:.26,swgap:.22,sw2w:.15,sw2:.26,sw3g:.27,sw3w:.34,sw3:.26,fli:.5,stagger:.6,swrec:.65,flrec:.65,fyt:.36,fyg:.05},waitMin:.5,waitMax:.9,chain:[[4,.6],[8,.35]]}
 };
 let DIFF=DIFFS.normal,BRW=.17;
+const RKX=[PX+330,PX+190,PX+440];
 const T={windup:.75,strike:0.5,barrier:0.333,recovery:0.7,rebound:0.42,stagger:.75,sw1w:.9,sw1:.3,swgap:.45,sw2w:.4,sw2:.3,swrec:.8,cast:.5,orb:.45,fli:.6,flo:.25,flwin:.167,flrec:.8,dash:.28,back:.5,ringAt:.5};
+T.sw3g=.32;T.sw3w=.4;T.sw3=.3;
+T.fyt=.45;T.fyg=.15; /* fureur : annonce d'un jet, pause entre deux jets */
 const DMG_GRAB=1,DMG_PARRY=1,DMG_SWORD=1,DMG_ORB=1,DMG_FLAME=1,DMG_STAB=1,LIFT_MAX=170;
 const DISPLAY='"Big Shoulders Display",Impact,sans-serif';
 
@@ -299,12 +311,22 @@ let G=null,AC=null;
 /* ---------- audio ---------- */
 function ensureAudio(){
   try{
+    if(AC&&AC.state==='closed')AC=null;
     if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C();}
-    if(AC&&AC.state==='suspended')AC.resume();
+    if(AC&&AC.state!=='running'&&AC.resume)AC.resume().catch(()=>{}); /* suspended, ou « interrupted » sur Safari */
   }catch(e){}
 }
+/* Le navigateur coupe le son quand l'onglet passe en arrière-plan ou après une inactivité : on le relance à la moindre interaction. */
+/* Déverrouillage : le navigateur n'autorise le son qu'après un vrai geste ; on crée / relance le contexte à chacun d'eux tant qu'il ne tourne pas, et on joue un son muet pour l'amorcer. */
+function unlockAudio(){
+  ensureAudio();
+  try{if(AC&&AC.state==='running'&&!AC.__u){AC.__u=1;const b=AC.createBuffer(1,1,22050),n=AC.createBufferSource();n.buffer=b;n.connect(AC.destination);n.start(0)}}catch(e){}
+}
+['click','pointerup','mousedown','touchend','keydown'].forEach(ev=>window.addEventListener(ev,()=>{if(!AC||AC.state!=='running'||!AC.__u)unlockAudio()},true));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)ensureAudio()});
 function tone(f,d,type,v,slide){
   if(!prefs.sound||!AC)return;
+  if(AC.state!=='running')ensureAudio();
   try{
     const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;
     o.type=type||'sine';
@@ -320,6 +342,7 @@ const say=t=>{el.live.textContent=t};
 let NB=null;
 function noise(d,v,f0,f1){
   if(!prefs.sound||!AC)return;
+  if(AC.state!=='running')ensureAudio();
   try{
     if(!NB){NB=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const a=NB.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1}
     const n=AC.currentTime,src=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
@@ -335,6 +358,7 @@ function boom(d,v){tone(55,d,'sine',v,-20);noise(d,v*.9,900,50)}
 function whoosh(d,v,up){noise(d,v,up?400:2800,up?2800:400)}
 function roar(){
   if(!prefs.sound||!AC)return;
+  if(AC.state!=='running')ensureAudio();
   try{
     const n=AC.currentTime,d=.9,g=AC.createGain(),f=AC.createBiquadFilter(),lfo=AC.createOscillator(),lg=AC.createGain();
     f.type='lowpass';f.frequency.setValueAtTime(900,n);f.frequency.exponentialRampToValueAtTime(220,n+d);
@@ -355,10 +379,20 @@ function newGame(){
   const emb=G?G.embers:makeEmbers();
   G={mode:'title',time:0,php:DIFF.php,bhp:DIFF.bhp,parries:0,grabs:0,
      boss:{s:'idle',t:0,wait:1.5},pl:{s:'ready',t:0,deny:0,x:PX},
-     sparks:[],rings:[],floats:[],trail:[],swTrail:[],sw:{p1:false,p2:false},atk:{last:'',n:0},kick:0,wound:0,p2:false,fy:null,jf:null,fin:null,ringFx:null,embers:emb,
+     sparks:[],rings:[],floats:[],trail:[],swTrail:[],sw:{p1:false,p2:false,p3:false},atk:{last:'',n:0,plain:0},kick:0,wound:0,p2:false,fy:null,jf:null,fin:null,ringFx:null,embers:emb,
      shake:0,flash:0,hurt:0,hitstop:0,recoil:0,endIn:0};
 }
-function toIdle(){const b=G.boss;b.s='idle';b.t=0;b.fury=0;b.wait=rand(1.2,2.2)}
+/* Remet à zéro les variantes d'attaque du Colosse (durées modifiées, double fouet, souffle enchaîné…). */
+function clearMods(b){b.fli=0;b.fyb=false;b.sk=0;b.dbl=false;b.dbf=false;b.second=false}
+function toIdle(chain){
+  const b=G.boss;b.s='idle';b.t=0;b.fury=0;b.force=null;clearMods(b);
+  b.wait=DIFF.hard?rand(DIFF.waitMin,DIFF.waitMax):rand(1.2,2.2);
+  /* Difficile : après une attaque, le souffle peut partir sans respiration. */
+  if(chain&&DIFF.hard&&G.atk.last!=='flame'){
+    const c=DIFF.chain.find(x=>G.bhp<=x[0]);
+    if(c&&(G.atk.plain>=2||Math.random()<c[1])){b.force='flame';b.wait=.05}
+  }
+}
 
 function start(){
   el.go2.hidden=true;
@@ -374,6 +408,7 @@ function start(){
     if(Q.mode==='lake'){beginP3();return}
     Q=null;setPhaseUI(1);newGame();lastP=-1;lastB=-1;hud();
   }
+  if(G.mode==='won'&&DIFF.locked){showMenu(false);return}
   if(G.mode==='play'||G.mode==='intro')return;
   const fresh=G.mode==='title';
   if(!fresh)newGame();
@@ -423,6 +458,16 @@ function deathCard(){
 el.go2.addEventListener('click',()=>{prefs.help=el.help.checked=true;start()});
 function showEnd(){
   const win=G.mode==='won';
+  if(win&&DIFF.locked){
+    el.eye.textContent='Difficile · Phase I terminée';
+    el.title.textContent='Le Colosse plie un genou.';
+    el.stats.textContent='Parades '+G.parries+' · Coups subis '+G.grabs;el.stats.hidden=false;
+    el.desc.textContent=`Les phases II et III du mode Difficile sont encore en préparation. En attendant, tu peux les affronter en Normal.`;
+    el.go.textContent='Retour au menu';
+    el.ov.hidden=false;
+    try{el.go.focus({preventScroll:true})}catch(e){}
+    return;
+  }
   el.eye.textContent=win?(G.p2?'Transition · Phase II':'Phase I terminée'):'Défaite';
   el.title.textContent=win?(G.p2?`Le Colosse t'entraîne dans la chute.`:'Le Colosse plie un genou.'):'Écrasé sur la pierre.';
   el.stats.textContent='Parades '+G.parries+' · Coups subis '+G.grabs;
@@ -449,9 +494,19 @@ function liftAmt(){
   if(b.s==='slam')return LIFT_MAX*(1-ei(clamp01(b.t/.16)));
   return 0;
 }
+/* Le bouclier est levé (ou vient juste de retomber : tolérance de 0,06 s). */
+function blocked(){const p=G.pl;return p.s==='barrier'||(p.s==='recover'&&p.t<.06)}
 function resolveStrike(){
   const p=G.pl,b=G.boss;
-  const warded=p.s==='barrier'||(p.s==='recover'&&p.t<.06);
+  const warded=blocked();
+  if(warded&&b.dbl){ /* chaîne double : premier coup paré, le second arrive 0,5 s plus tard */
+    b.dbl=false;b.sk=.32;
+    parrySuccess(BAR[0],BAR[1]);
+    b.s='rewind';b.t=0;
+    say('Premier coup paré.');
+    return;
+  }
+  b.dbl=false;b.sk=0;
   if(warded){
     b.s='rebound';b.t=0;G.parries++;G.hitstop=.08;G.flash=.35;
     ring(BAR[0],BAR[1]);
@@ -484,15 +539,30 @@ function slamHit(){
 }
 function startAttack(){
   const b=G.boss,a=G.atk;
-  if(G.bhp===1||G.bhp===DIFF.u){startFury(G.bhp===1?1:5);return}
+  if(DIFF.fury[G.bhp]){startFury(DIFF.fury[G.bhp]);return}
   const kinds=['whip','sword','flame'];
   let k=a.last===''?'whip':kinds[Math.floor(Math.random()*3)];
   if(k===a.last&&a.n>=2){const o=kinds.filter(x=>x!==k);k=o[Math.floor(Math.random()*2)]}
+  let chained=false;
+  if(b.force==='flame'){k='flame';chained=true}
+  b.force=null;
   a.n=(k===a.last)?a.n+1:1;a.last=k;
-  b.t=0;
-  if(k==='whip'){b.s='windup';tone(110,.5,'sawtooth',.03,60)}
-  else if(k==='sword'){b.s='sw1w';G.sw.p1=false;G.sw.p2=false;tone(180,.6,'sawtooth',.04,140)}
-  else{b.s='fl_in';tone(90,.6,'sawtooth',.05,90)}
+  b.t=0;clearMods(b);
+  /* Difficile : « plain » compte les attaques simples d'affilée (fouet simple, souffle normal) pour que les variantes reviennent régulièrement. */
+  const was=a.plain;
+  a.plain=(k==='sword'||chained)?0:was+1;
+  if(k==='whip'){
+    b.s='windup';tone(110,.5,'sawtooth',.03,60);
+    if(DIFF.hard&&(Math.random()<.5||was>=1)){b.dbl=true;dblTell()} /* chaîne double (garantie après une attaque « simple ») */
+  }
+  else if(k==='sword'){b.s='sw1w';G.sw.p1=false;G.sw.p2=false;G.sw.p3=false;tone(180,.6,'sawtooth',.04,140)}
+  else{
+    b.s='fl_in';tone(90,.6,'sawtooth',.05,90);
+    if(chained){ /* souffle enchaîné : inspiration brève, signal distinct, deux souffles d'affilée */
+      b.fli=.35;b.dbf=true;chainTell();
+    }
+  }
+  if(k==='whip'&&b.dbl)a.plain=0;
 }
 function parrySuccess(x,y){
   const p=G.pl;
@@ -503,13 +573,13 @@ function parrySuccess(x,y){
   p.s='ready';p.t=0;
 }
 function resolveSword(n){
-  const b=G.boss,p=G.pl,pt=n===1?BAR:VHIT;
-  const warded=p.s==='barrier'||(p.s==='recover'&&p.t<.06);
-  if(n===1)G.sw.p1=warded;else G.sw.p2=warded;
+  const b=G.boss,p=G.pl,pt=n===2?VHIT:BAR;
+  const warded=blocked();
+  G.sw['p'+n]=warded;
   G.kick=warded?1:0;
   if(warded){
     parrySuccess(pt[0],pt[1]);
-    say(n===1?'Premier coup paré.':'Second coup paré.');
+    say(['Premier','Second','Troisième'][n-1]+' coup paré.');
   }else{
     G.php=Math.max(0,G.php-DMG_SWORD);G.grabs++;
     G.shake=reduce?0:10;G.hurt=.3;
@@ -520,10 +590,12 @@ function resolveSword(n){
     say(`Touché par l'épée.`);
     if(G.php<=0){G.mode='lost';G.endIn=1.1;say('Tu es à terre. Défaite.')}
   }
+  const last=DIFF.hard?3:2;
   if(n===1){b.s='swgap';b.t=0}
-  else if(G.sw.p1&&G.sw.p2){
+  else if(n<last){b.s='sw3g';b.t=0}
+  else if(G.sw.p1&&G.sw.p2&&(!DIFF.hard||G.sw.p3)){
     b.s='orb';b.t=0;p.s='cast';p.t=0;
-    float('DOUBLE PARADE !',PX+150,DECK-250,'#ffffff');
+    float(DIFF.hard?'TRIPLE PARADE !':'DOUBLE PARADE !',PX+150,DECK-250,'#ffffff');
     tone(400,.6,'sine',.05,400);
     say('Combo paré. Le Veilleur lance une orbe de lumière.');
   }else{b.s='swrec';b.t=0}
@@ -538,9 +610,18 @@ function orbHit(){
   if(G.bhp<=0){b.s='dead';b.t=0;G.mode='won';G.endIn=1.4;say('Le Colosse est à genoux. Phase I terminée.')}
   else{b.s='hurt';b.t=0;b.hurtT=1.1;say('Orbe de lumière en plein cœur.')}
 }
+function dblTell(){tone(1100,.08,'square',.045,-200);setTimeout(()=>tone(1100,.08,'square',.045,-200),110)}
+function chainTell(){tone(1500,.14,'square',.05,-800);tone(950,.24,'sawtooth',.04,-350);G.flash=Math.max(G.flash,.2)}
 function resolveFlame(){
   const b=G.boss,p=G.pl;
   const warded=p.s==='barrier'&&p.t<=T.flwin+.03;
+  if(warded&&b.dbf&&!b.second){ /* premier souffle paré : le second arrive 0,3 s plus tard */
+    b.second=true;b.s='fl_in';b.t=0;b.fli=.3;
+    parrySuccess(BAR[0],BAR[1]);chainTell();
+    say('Souffle paré. Un second souffle arrive !');
+    return;
+  }
+  b.dbf=false;
   if(warded){
     parrySuccess(BAR[0],BAR[1]);
     p.s='dash';p.t=0;b.s='fl_stab';b.t=0;
@@ -568,9 +649,14 @@ function legHit(){
   if(G.bhp<=0){b.s='dead';b.t=0;G.mode='won';G.endIn=1.4;say('Le Colosse est à genoux. Phase I terminée.')}
   else{b.s='hurt';b.t=0;b.hurtT=1;say(`Épée plantée dans la jambe du Colosse.`)}
 }
+/* j = jet de feu, b = souffle, r = rocher. Normal : jets (+ rocher à 1 PV). Difficile : séquences propres à chaque rage. */
+function furySeq(lvl){
+  if(DIFF.hard)return {5:'jjjjjj',6:'jjbbjj',1:'jjbbrrr'}[lvl].split('');
+  return ('j'.repeat(DIFF.jets)+(lvl===1?'r':'')).split('');
+}
 function startFury(lvl){
-  const b=G.boss;
-  G.fy={lvl,i:0,miss:0,ok:[false,false,false,false,false]};
+  const b=G.boss,seq=furySeq(lvl);
+  G.fy={lvl,i:0,miss:0,seq,ok:seq.map(()=>false),rocks:0};
   b.s='fy_roar';b.t=0;b.fury=lvl;
   float(lvl===1?'FUREUR DÉMESURÉE !':'FUREUR !',BX-40,DECK-335,'#ffb04a');
   tone(70,1,'sawtooth',.08,40);
@@ -586,32 +672,50 @@ function hurtPlayer(label){
   say('Touché.');
   if(G.php<=0){G.mode='lost';G.endIn=1.1;say('Tu es à terre. Défaite.')}
 }
+/* Étape suivante de la fureur (ou fin). */
+function fyEnter(c){
+  const b=G.boss,F=G.fy;
+  b.t=0;clearMods(b);
+  if(c==='j')b.s=F.i?'fy_gap':'fy_t';
+  else if(c==='r'){b.s='rk_t';b.rki=F.rocks++%RKX.length}
+  else{b.s='fl_in';b.fyb=true;b.fli=F.seq[F.i-1]==='b'?.3:.45;tone(90,.5,'sawtooth',.05,90)}
+}
+function fyDone(){
+  const F=G.fy;
+  F.i++;
+  if(G.mode!=='play'||F.i>=F.seq.length)endFury();
+  else fyEnter(F.seq[F.i]);
+}
 function resolveJet(){
-  const b=G.boss,p=G.pl,F=G.fy;
-  const warded=p.s==='barrier'||(p.s==='recover'&&p.t<.06);
+  const F=G.fy;
+  const warded=blocked();
   F.ok[F.i]=warded;
   G.jf={o:JET_O[F.i%4],t:.22};
   if(warded){parrySuccess(BAR[0],BAR[1])}
   else{F.miss++;hurtPlayer('BRÛLÉ !')}
-  F.i++;
-  if(F.i<DIFF.jets){b.s='fy_gap';b.t=0}
-  else if(F.lvl===1){b.s='rk_t';b.t=0}
-  else endFury();
-  if(G.mode!=='play'&&b.s!=='fy_fail')endFury();
+  fyDone();
+}
+function resolveFuryBreath(){
+  const p=G.pl,F=G.fy;
+  const warded=p.s==='barrier'&&p.t<=T.flwin+.03;
+  F.ok[F.i]=warded;
+  if(warded){parrySuccess(BAR[0],BAR[1]);float('PARÉ !',BAR[0]+60,BAR[1]-170,'#ffd166')}
+  else{F.miss++;burst(PX+10,DECK-70,24,['#ffc15a','#ff7a2b','#ff4d1a']);hurtPlayer('BRÛLÉ !')}
+  fyDone();
 }
 function resolveRock(){
-  const p=G.pl,F=G.fy;
-  const warded=p.s==='barrier'||(p.s==='recover'&&p.t<.06);
-  F.ok[DIFF.jets]=warded;F.i=DIFF.jets+1;
+  const F=G.fy;
+  const warded=blocked();
+  F.ok[F.i]=warded;
   burst(RK[0],RK[1],warded?20:34,['#ff9a3c','#ffc15a','#6b5a63','#ffffff']);
   if(warded){parrySuccess(RK[0],RK[1]);say('Rocher paré.')}
   else{F.miss++;hurtPlayer('ÉCRASÉ !')}
-  endFury();
+  fyDone();
 }
 function endFury(){
   const b=G.boss,p=G.pl,F=G.fy;
   if(G.mode!=='play'||F.miss>0){b.s='fy_fail';b.t=0;return}
-  if(F.lvl===5){
+  if(F.lvl===5||F.lvl===6){
     b.s='fy_cast';b.t=0;p.s='ring';p.t=0;p.fired=false;
     say('Fureur parée. Le Veilleur frappe le sol.');
   }else startFinal();
@@ -637,29 +741,33 @@ function bossStep(dt){
   switch(b.s){
     case 'idle':if(G.mode==='play'&&b.t>=b.wait)startAttack();break;
     case 'windup':if(b.t>=T.windup){b.s='strike';b.t=0;tone(260,.14,'sawtooth',.06,-160)}break;
-    case 'strike':if(b.t>=T.strike)resolveStrike();break;
+    case 'rewind':if(b.t>=.18){b.s='strike';b.t=0;tone(260,.14,'sawtooth',.06,-160)}break;
+    case 'strike':if(b.t>=(b.sk||T.strike))resolveStrike();break;
     case 'rebound':if(b.t>=T.rebound)headHit();break;
-    case 'stagger':if(b.t>=(b.stagT||T.stagger))toIdle();break;
+    case 'stagger':if(b.t>=(b.stagT||T.stagger))toIdle(true);break;
     case 'lift':if(b.t>=.55){b.s='hold';b.t=0}break;
     case 'hold':if(b.t>=.22){b.s='slam';b.t=0}break;
     case 'slam':if(b.t>=.16)slamHit();break;
-    case 'release':if(b.t>=.6)toIdle();break;
+    case 'release':if(b.t>=.6)toIdle(true);break;
     case 'sw1w':if(b.t>=T.sw1w){b.s='sw1';b.t=0;tone(300,.12,'sawtooth',.06,-180)}break;
     case 'sw1':if(b.t>=T.sw1)resolveSword(1);break;
     case 'swgap':if(b.t>=T.swgap){b.s='sw2w';b.t=0}break;
     case 'sw2w':if(b.t>=T.sw2w){b.s='sw2';b.t=0;tone(240,.14,'sawtooth',.06,-160)}break;
     case 'sw2':if(b.t>=T.sw2)resolveSword(2);break;
-    case 'swrec':if(b.t>=T.swrec)toIdle();break;
+    case 'sw3g':if(b.t>=T.sw3g){b.s='sw3w';b.t=0}break;
+    case 'sw3w':if(b.t>=T.sw3w){b.s='sw3';b.t=0;tone(300,.12,'sawtooth',.06,-180)}break;
+    case 'sw3':if(b.t>=T.sw3)resolveSword(3);break;
+    case 'swrec':if(b.t>=T.swrec)toIdle(true);break;
     case 'orb':if(b.t>=T.cast+T.orb)orbHit();break;
-    case 'fl_in':if(b.t>=T.fli){b.s='fl_out';b.t=0;tone(200,.25,'sawtooth',.07,-120)}break;
-    case 'fl_out':if(b.t>=T.flo)resolveFlame();break;
+    case 'fl_in':if(b.t>=(b.fli||T.fli)){b.s='fl_out';b.t=0;tone(200,.25,'sawtooth',.07,-120)}break;
+    case 'fl_out':if(b.t>=T.flo){if(b.fyb)resolveFuryBreath();else resolveFlame()}break;
     case 'fl_rec':if(b.t>=T.flrec)toIdle();break;
     case 'fl_stab':if(b.t>=T.dash+.1)legHit();break;
     case 'hurt':if(b.t>=b.hurtT)toIdle();break;
-    case 'fy_roar':if(b.t>=1.0){b.s='fy_t';b.t=0}break;
-    case 'fy_t':if(b.t>=.45){b.s='fy_j';b.t=0;tone(220,.15,'sawtooth',.06,-120)}break;
+    case 'fy_roar':if(b.t>=1.0)fyEnter(G.fy.seq[0]);break;
+    case 'fy_t':if(b.t>=T.fyt){b.s='fy_j';b.t=0;tone(220,.15,'sawtooth',.06,-120)}break;
     case 'fy_j':if(b.t>=.3)resolveJet();break;
-    case 'fy_gap':if(b.t>=.15){b.s='fy_t';b.t=0}break;
+    case 'fy_gap':if(b.t>=T.fyg){b.s='fy_t';b.t=0}break;
     case 'rk_t':if(b.t>=.5){b.s='rk_j';b.t=0;tone(150,.5,'sawtooth',.05,-80)}break;
     case 'rk_j':if(b.t>=.55)resolveRock();break;
     case 'fy_cast':if(b.t>=T.ringAt+.55)ringHit();break;
@@ -684,15 +792,15 @@ function bossStep(dt){
 function pips(box,n,max,marks){
   if(box.children.length!==max){
     box.textContent='';
-    for(let i=0;i<max;i++){const s=document.createElement('span');if(marks.includes(i))s.className='mark';box.appendChild(s)}
+    for(let i=0;i<max;i++)box.appendChild(document.createElement('span'));
   }
-  for(let i=0;i<max;i++)box.children[i].classList.toggle('on',i<n);
+  for(let i=0;i<max;i++){box.children[i].classList.toggle('on',i<n);box.children[i].classList.toggle('mark',marks.includes(i))}
 }
 let lastP=-1,lastB=-1;
 function hud(){
   const S=R||Q||G;
   if(S.php!==lastP){pips(el.hpP,S.php,DIFF.php,[]);$('hpPn').textContent=S.php+'/'+DIFF.php;lastP=S.php}
-  if(S.bhp!==lastB){pips(el.hpB,S.bhp,DIFF.bhp,[0,DIFF.u-1]);$('hpBn').textContent=S.bhp+'/'+DIFF.bhp;lastB=S.bhp}
+  if(S.bhp!==lastB||S.mkBox!==(S===G)){S.mkBox=(S===G);pips(el.hpB,S.bhp,DIFF.bhp,S===G?DIFF.mk1:DIFF.mk);$('hpBn').textContent=S.bhp+'/'+DIFF.bhp;lastB=S.bhp}
 }
 function step(dt){
   G.time+=dt;
@@ -701,7 +809,7 @@ function step(dt){
   for(let i=G.rings.length-1;i>=0;i--){G.rings[i].life-=dt;if(G.rings[i].life<=0)G.rings.splice(i,1)}
   for(let i=G.floats.length-1;i>=0;i--){G.floats[i].life-=dt;if(G.floats[i].life<=0)G.floats.splice(i,1)}
   G.shake=Math.max(0,G.shake-dt*45);G.flash=Math.max(0,G.flash-dt*2.2);G.hurt=Math.max(0,G.hurt-dt*1.6);G.recoil=Math.max(0,G.recoil-dt*3.5);G.kick=Math.max(0,G.kick-dt*5);G.wound=Math.max(0,G.wound-dt*.5);
-  if(G.endIn>0){G.endIn-=dt;if(G.endIn<=0){if(G.mode==='won'&&G.p2)beginP2();else showEnd()}}
+  if(G.endIn>0){G.endIn-=dt;if(G.endIn<=0){if(G.mode==='won'&&G.p2&&!DIFF.locked)beginP2();else showEnd()}}
   if(G.hitstop>0){G.hitstop-=dt;return}
   const p=G.pl;p.t+=dt;p.deny=Math.max(0,p.deny-dt);
   if(p.s==='barrier'&&p.t>=T.barrier){p.s='recover';p.t=0}
@@ -896,10 +1004,14 @@ function pose(){
       tip=lerp2(rest,TIP_BACK,k);tip[0]+=Math.sin(G.time*8)*5;
       sag=48;heat=.3+.7*(t/T.windup);break;}
     case 'strike':{
-      const p=clamp01(t/T.strike);
+      const p=clamp01(t/(b.sk||T.strike));
       hand=lerp2(UP_HAND,FWD_HAND,eo(clamp01(t/.14)));
       tip=lerp2(TIP_BACK,BAR,ei(p));tip[1]-=140*Math.sin(Math.PI*p)*(1-.55*p);
       sag=-80*(1-p)+8;heat=1;break;}
+    case 'rewind':{
+      const k=eo(clamp01(t/.18));
+      hand=lerp2(FWD_HAND,UP_HAND,k);tip=lerp2(BAR,TIP_BACK,k);tip[1]-=60*Math.sin(Math.PI*k);
+      sag=-30;heat=1;break;}
     case 'rebound':{
       hand=FWD_HAND;
       const e=es(clamp01(t/T.rebound));
@@ -931,6 +1043,27 @@ function pose(){
   return {hand,tip,sag,heat};
 }
 
+/* Signal du souffle enchaîné : halo blanc-bleu pulsant sur la tête et grand « ! » à gauche du Colosse (le souffle normal n'a que les flammes orange). */
+function drawChainTell(x,y,t){
+  const k=.85+.15*Math.sin(t*38);
+  ctx.save();
+  const g=ctx.createRadialGradient(x,y,4,x,y,70);
+  g.addColorStop(0,'rgba(220,245,255,'+(.55*k)+')');g.addColorStop(1,'rgba(120,200,255,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,70,0,6.283);ctx.fill();
+  ctx.fillStyle='rgba(235,250,255,'+(.95*k)+')';ctx.shadowColor='#9fdcff';ctx.shadowBlur=18;
+  ctx.font='900 78px '+DISPLAY;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('!',x-150,y-50);
+  ctx.restore();
+}
+/* Signal du double fouet : « !! » orange à gauche du Colosse, plus discret que celui du souffle enchaîné. */
+function drawDblTell(t){
+  const k=.85+.15*Math.sin(t*30);
+  ctx.save();
+  ctx.fillStyle='rgba(255,176,74,'+k+')';ctx.shadowColor='#ff7a2b';ctx.shadowBlur=14;
+  ctx.font='900 54px '+DISPLAY;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('!!',BX-168,DECK-288);
+  ctx.restore();
+}
 function swordPose(){
   const b=G.boss,t=b.t,tm=G.time;
   const A0=-Math.PI+.18;
@@ -953,14 +1086,24 @@ function swordPose(){
     case 'sw2':{
       const e=es(clamp01(t/T.sw2));
       hand=lerp2(SW2_UP,SW2_HIT,e);a=-1.2-2.42*e;len=SW_LEN;heat=1;break;}
+    case 'sw3g':{
+      const k=eo(clamp01(t/T.sw3g));
+      hand=lerp2(SW2_HIT,SW1_BACK,k);a=-3.62+(3.62-3.14+.18)*k;len=SW_LEN;heat=1;
+      if(!G.sw.p2){hand[0]-=60*Math.sin(Math.PI*clamp01(t/.24))}
+      hand[0]+=G.kick*30;break;}
+    case 'sw3w':
+      hand=[SW1_BACK[0],SW1_BACK[1]+Math.sin(tm*50)*1.5];a=-Math.PI+.18;len=SW_LEN;heat=1;break;
+    case 'sw3':{
+      const e=es(clamp01(t/T.sw3));
+      hand=lerp2(SW1_BACK,SW1_HIT,e);a=-Math.PI+.18*(1-e);len=SW_LEN;heat=1;break;}
     case 'swrec':{
       const k=eo(clamp01(t/T.swrec));
-      hand=lerp2(SW2_HIT,IDLE2,k);a=-3.62+.66*k;len=SW_LEN*(1-clamp01(t/.5));heat=.8;
-      if(!G.sw.p2){const q=Math.sin(Math.PI*clamp01(t/.24));hand[0]-=60*q;hand[1]+=60*q}
+      hand=lerp2(DIFF.hard?SW1_HIT:SW2_HIT,IDLE2,k);a=-3.62+.66*k;len=SW_LEN*(1-clamp01(t/.5));heat=.8;
+      if(!(DIFF.hard?G.sw.p3:G.sw.p2)){const q=Math.sin(Math.PI*clamp01(t/.24));hand[0]-=60*q;hand[1]+=60*q}
       hand[0]+=G.kick*30;break;}
     case 'orb':{
       const k=eo(clamp01(t/.6));
-      hand=lerp2(SW2_HIT,IDLE2,k);a=-3.62+.66*k;len=SW_LEN*(1-clamp01(t/.4));heat=.5;
+      hand=lerp2(DIFF.hard?SW1_HIT:SW2_HIT,IDLE2,k);a=-3.62+.66*k;len=SW_LEN*(1-clamp01(t/.4));heat=.5;
       hand[0]+=G.kick*30;break;}
   }
   return {hand,a,len,heat};
@@ -1050,14 +1193,14 @@ function drawBoss(){
 
   ctx.save();ctx.translate(BX+dx,DECK+dy);
   /* bras droit dessiné dans le repère du monde, voir drawSwordArm */
-  const jaw=(G.mode==='intro'&&G.it>3.0&&G.it<3.9)?14:b.s==='fl_in'?14*clamp01(b.t/T.fli):(b.s==='fl_out'||b.s==='fy_roar')?14:0;
+  const jaw=(G.mode==='intro'&&G.it>3.0&&G.it<3.9)?14:b.s==='fl_in'?14*clamp01(b.t/Math.min(T.fli,b.fli||T.fli)):(b.s==='fl_out'||b.s==='fy_roar')?14:0;
   ctx.save();ctx.scale(.92,.92);
   {const wf=Math.sin(t*1.8)*.03;
    for(const sd of [-1,1]){drawWing([sd*64,-222],-.85+wf,.8,'#220a11',.34,!!b.fury,sd);drawWing([sd*50,-232],-1.15+wf,1,'#35101a',.34,!!b.fury,sd)}}
   demonBody({t,warm,jaw,hurt:G.recoil>.3,dead,wound:G.wound});
   ctx.restore();
   ctx.restore();
-  if(b.s==='fl_in'||b.s==='fl_out')faceFire(BX+dx-18,DECK+dy-238,b.s==='fl_in'?es(clamp01(b.t/T.fli)):1-es(clamp01(b.t/.5)),b.s==='fl_in'?b.t:1);
+  if(b.s==='fl_in'||b.s==='fl_out')faceFire(BX+dx-18,DECK+dy-238,b.s==='fl_in'?es(clamp01(b.t/Math.min(T.fli,b.fli||T.fli))):1-es(clamp01(b.t/.5)),b.s==='fl_in'?b.t:1);
 
   if(b.fury){ctx.save();ctx.translate(BX+dx,DECK+dy);drawAura(b.fury);ctx.restore()}
   /* bras et mains suivent le corps (secousses, chute de fin de phase) */
@@ -1070,7 +1213,7 @@ function drawBoss(){
     rg.addColorStop(0,'rgba(255,190,90,'+(.55*pz.heat)+')');rg.addColorStop(1,'rgba(255,120,40,0)');
     ctx.fillStyle=rg;ctx.beginPath();ctx.arc(h[0],h[1],34,0,6.283);ctx.fill();
   }
-  if(b.s==='strike'||b.s==='rebound'){
+  if(b.s==='strike'||b.s==='rebound'||b.s==='rewind'){
     G.trail.push([tip[0],tip[1]]);if(G.trail.length>7)G.trail.shift();
   }else G.trail.length=0;
   G.trail.forEach((q,i)=>{
@@ -1157,32 +1300,33 @@ function drawHints(){
     }
     hintBar(PX,DECK-206,k,blue);
   };
-  if(['sw1w','sw1','swgap','sw2w','sw2'].includes(b.s)){
-    const first=b.s==='sw1w'||b.s==='sw1';
-    if(b.s!=='swgap'){
-      const tl=first?T.sw1w+T.sw1:T.sw2w+T.sw2;
-      const ela=(b.s==='sw1w'||b.s==='sw2w')?b.t:(first?T.sw1w:T.sw2w)+b.t;
+  if(['sw1w','sw1','swgap','sw2w','sw2','sw3g','sw3w','sw3'].includes(b.s)){
+    const hit=+b.s.charAt(2),wait=[T.sw1w,T.sw2w,T.sw3w][hit-1],strike=[T.sw1,T.sw2,T.sw3][hit-1];
+    if(b.s!=='swgap'&&b.s!=='sw3g'){
+      const tl=wait+strike;
+      const ela=b.s.endsWith('w')?b.t:wait+b.t;
       const rem=Math.max(0,tl-ela),inWin=rem<=T.barrier;
       const k=inWin?rem/T.barrier:ela/(tl-T.barrier);
       cue(k,inWin);
     }
-    for(let i=0;i<2;i++){
-      const ok=i?G.sw.p2:G.sw.p1,x=PX-9+i*18,y=DECK-220;
+    const nsw=DIFF.hard?3:2;
+    for(let i=0;i<nsw;i++){
+      const ok=[G.sw.p1,G.sw.p2,G.sw.p3][i],x=PX+(i-(nsw-1)/2)*18,y=DECK-220;
       ctx.beginPath();ctx.arc(x,y,5,0,6.283);
       if(ok){ctx.fillStyle='#6fd3ff';ctx.fill()}
       else{ctx.strokeStyle='rgba(240,232,223,.6)';ctx.lineWidth=2;ctx.stroke()}
     }
   }
   if(b.s==='fl_in'||b.s==='fl_out'){
-    const tl=T.fli+T.flo,ela=b.s==='fl_in'?b.t:T.fli+b.t;
+    const fli=b.fli||T.fli,tl=fli+T.flo,ela=b.s==='fl_in'?b.t:fli+b.t;
     const rem=Math.max(0,tl-ela),inWin=rem<=T.flwin;
     const k=inWin?rem/T.flwin:ela/(tl-T.flwin);
     cue(k,inWin);
   }
-  if(G.fy&&['fy_roar','fy_t','fy_j','fy_gap','rk_t','rk_j'].includes(b.s)){
-    const F=G.fy,n=DIFF.jets+(F.lvl===1?1:0);
+  if(G.fy&&(['fy_roar','fy_t','fy_j','fy_gap','rk_t','rk_j'].includes(b.s)||b.fyb)){
+    const F=G.fy,n=F.seq.length;
     if(b.s==='fy_t'||b.s==='fy_j'||b.s==='rk_t'||b.s==='rk_j'){
-      const rk=b.s==='rk_t'||b.s==='rk_j',t1=rk?.5:.45,tl=t1+(rk?.55:.3);
+      const rk=b.s==='rk_t'||b.s==='rk_j',t1=rk?.5:T.fyt,tl=t1+(rk?.55:.3);
       const ela=(b.s==='fy_t'||b.s==='rk_t')?b.t:t1+b.t;
       const rem=Math.max(0,tl-ela),inWin=rem<=T.barrier;
       const k=inWin?rem/T.barrier:ela/(tl-T.barrier);
@@ -1197,7 +1341,7 @@ function drawHints(){
     }
   }
   if(b.s==='windup'||b.s==='strike'){
-    const k=b.s==='windup'?b.t/T.windup:1-b.t/T.strike;
+    const k=b.s==='windup'?b.t/T.windup:1-b.t/(b.sk||T.strike);
     const col=b.s==='windup'?'rgba(255,122,43,.85)':'#6fd3ff';
     cue(k,b.s==='strike');
   }
@@ -1271,7 +1415,7 @@ function flameJet(o,front,al,wide){
 function drawJets(){
   const b=G.boss,F=G.fy;
   if(F&&b.s==='fy_t'){
-    const k=clamp01(b.t/.45),o=JET_O[F.i%4],r=10+36*k;
+    const k=clamp01(b.t/T.fyt),o=JET_O[F.i%4],r=10+36*k;
     ctx.save();
     const g=ctx.createRadialGradient(o[0],o[1],0,o[0],o[1],r);
     g.addColorStop(0,'rgba(255,255,220,'+(.5+.5*k)+')');g.addColorStop(1,'rgba(255,110,30,0)');
@@ -1286,23 +1430,24 @@ function drawJets(){
 }
 function drawRock(){
   const b=G.boss;
+  const S=[RKX[b.rki||0],RK_S[1]];
   if(b.s==='rk_t'){
     const k=clamp01(b.t/.5);
     ctx.save();
-    const g=ctx.createRadialGradient(RK_S[0],8,0,RK_S[0],8,150);
+    const g=ctx.createRadialGradient(S[0],8,0,S[0],8,150);
     g.addColorStop(0,'rgba(255,120,40,'+(.6*k)+')');g.addColorStop(1,'rgba(255,120,40,0)');
-    ctx.fillStyle=g;ctx.fillRect(RK_S[0]-170,0,340,170);
+    ctx.fillStyle=g;ctx.fillRect(S[0]-170,0,340,170);
     ctx.fillStyle='rgba(255,170,70,'+(.8*k)+')';
     for(let i=0;i<8;i++){
-      const ex=RK_S[0]-80+i*23+Math.sin(G.time*3+i)*6,ey=((G.time*140+i*57)%160);
+      const ex=S[0]-80+i*23+Math.sin(G.time*3+i)*6,ey=((G.time*140+i*57)%160);
       ctx.fillRect(ex,ey,3,3);
     }
     ctx.restore();
   }
   if(b.s==='rk_j'){
-    const q=clamp01(b.t/.55),pos=lerp2(RK_S,RK,ei(q));
+    const q=clamp01(b.t/.55),pos=lerp2(S,RK,ei(q));
     for(let i=1;i<=7;i++){
-      const pp=lerp2(RK_S,RK,ei(Math.max(0,q-i*.04)));
+      const pp=lerp2(S,RK,ei(Math.max(0,q-i*.04)));
       ctx.fillStyle='rgba(255,'+(140+i*10)+',50,'+(.5-i*.06)+')';
       ctx.beginPath();ctx.arc(pp[0],pp[1],28-i*2.5,0,6.283);ctx.fill();
     }
@@ -1408,7 +1553,7 @@ function render(){
   ctx.fillStyle=lg;ctx.fillRect(0,0,W,H);
   drawEmbers(0,70,1);
   ctx.drawImage(bgBridge,0,0,W,H);
-  drawHole();ctx.save();ctx.translate(G.ix||0,0);drawBoss();ctx.restore();drawCracks();drawPlayer();drawFlame();drawJets();drawRock();drawRing();drawLash();drawBarrier();drawOrb();drawHints();drawFx();
+  drawHole();ctx.save();ctx.translate(G.ix||0,0);drawBoss();ctx.restore();drawCracks();drawPlayer();drawFlame();drawJets();drawRock();if(G.boss.dbf&&G.boss.s==='fl_in')drawChainTell(BX-18,DECK-238,G.boss.t);if(G.boss.dbl&&(G.boss.s==='windup'||G.boss.s==='strike'))drawDblTell(G.boss.t);drawRing();drawLash();drawBarrier();drawOrb();drawHints();drawFx();
   drawEmbers(0,18,.9);
   ctx.restore();
   ctx.drawImage(vig,0,0,W,H);
@@ -3080,6 +3225,8 @@ function renderR(){
 /* ---------- navigation entre phases ---------- */
 const CARD1={eye:el.eye.textContent,title:el.title.textContent,desc:el.desc.textContent,go:el.go.textContent};
 function goPhase(n){
+  if(DIFF.locked&&n>1)return;
+  pendingLore=false; // une carte de lore laissée ouverte ne doit pas avaler le bouton « Commencer » suivant
   el.go2.hidden=true;hideMenu();el.ov.classList.remove('clear');
   if(n===1){
     R=null;Q=null;setPhaseUI(1);newGame();lastP=-1;lastB=-1;hud();
@@ -3110,6 +3257,16 @@ function setPause(on){
 $('pResume').addEventListener('click',()=>setPause(false));
 $('pMenu').addEventListener('click',()=>{pauseEl.hidden=true;showMenu(true)});
 $('pauseBtn').addEventListener('click',e=>{setPause(true);e.currentTarget.blur()});
+/* Réessayer : relance la phase en cours, sans carte ni lore. */
+function retryPhase(){
+  if(!menuEl.hidden)return;
+  pendingLore=false;pauseEl.hidden=true;paused=false;el.ov.hidden=true;el.go2.hidden=true;el.ov.classList.remove('clear');
+  ensureAudio();
+  if(R)beginP3(true);
+  else if(Q)beginP2(true);
+  else{newGame();G.mode='play';G.boss.wait=1.2;lastP=lastB=-1;hud();say('Phase I. Nouvel essai.')}
+}
+$('retryBtn').addEventListener('click',e=>{e.currentTarget.blur();retryPhase()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true)});
 function showMenu(fromGame){
   paused=true;pauseEl.hidden=true;menuEl.hidden=false;el.ov.classList.remove('clear');
@@ -3120,13 +3277,18 @@ function hideMenu(){paused=false;menuEl.hidden=true;pauseEl.hidden=true}
 $('mResume').addEventListener('click',()=>{hideMenu();try{if(!el.ov.hidden)el.go.focus({preventScroll:true})}catch(e){}});
 (function(){const sv=document.querySelector('.mscene');function fit(){const r=innerWidth/innerHeight;sv.setAttribute('preserveAspectRatio',r<1.2?'xMidYMax meet':'xMidYMax slice')}fit();addEventListener('resize',fit)})();
 (function(){const w=$('mEmbers');for(let i=0;i<26;i++){const e=document.createElement('i');e.className='mem';e.style.left=(Math.random()*100)+'%';e.style.setProperty('--dx',((Math.random()-.5)*160)+'px');e.style.animationDuration=(5+Math.random()*7)+'s';e.style.animationDelay=(-Math.random()*10)+'s';const z=2+Math.random()*3;e.style.width=e.style.height=z+'px';w.appendChild(e)}})();
-/* Difficile et Infernal restent à définir (boutons désactivés). */
-const BASEW={barrier:T.barrier,flwin:T.flwin,dodge:DG.act,guard:R_T.guard,breath:BRW};
+/* Infernal reste à définir (bouton désactivé). */
+const BASEW={barrier:T.barrier,flwin:T.flwin,dodge:DG.act,guard:R_T.guard,breath:BRW,rec:T.recovery,drec:DG.rec,rrec:R_T.rec};
+const BASET=Object.assign({},T);
 function applyDiff(name){
-  const d=DIFFS[name]||DIFFS.normal,m=d.m;
-  DIFF=d;T.barrier=BASEW.barrier*m;T.flwin=BASEW.flwin*m;DG.act=BASEW.dodge*m;R_T.guard=BASEW.guard*m;BRW=BASEW.breath*m;
+  const d=DIFFS[name]||DIFFS.normal,m=d.m,fm=d.fm||m,rm=d.rm||1;
+  DIFF=d;Object.assign(T,BASET,d.t||{});
+  T.barrier=BASEW.barrier*m;T.flwin=BASEW.flwin*fm;DG.act=BASEW.dodge*m;R_T.guard=BASEW.guard*m;BRW=BASEW.breath*fm;
+  T.recovery=BASEW.rec*rm;DG.rec=BASEW.drec*rm;R_T.rec=BASEW.rrec*rm;
+  document.querySelectorAll('#phases button').forEach((b,i)=>{b.disabled=!!d.locked&&i>0;b.title=b.disabled?'Bientôt en Difficile':''});
   lastP=lastB=-1;
   prefs.help=el.help.checked=false;deaths=0;
+  el.help.closest('label').hidden=!!d.noHelp;
 }
 document.querySelectorAll('#menu .mph button').forEach(b=>b.addEventListener('click',()=>{
   if(b.disabled)return;
@@ -3139,6 +3301,7 @@ window.addEventListener('keydown',e=>{
   if(e.repeat)return;
   const k=e.key;
   if(document.activeElement&&document.activeElement.tagName==='INPUT')return;
+  if((k==='r'||k==='R')&&menuEl.hidden&&el.ov.hidden){e.preventDefault();retryPhase();return}
   if((k==='p'||k==='P'||k==='Escape')&&menuEl.hidden){e.preventDefault();setPause(pauseEl.hidden);return}
   if(!pauseEl.hidden){if((k===' '||k==='Enter')&&document.activeElement!==$('pMenu')){e.preventDefault();setPause(false)}return}
   if(!menuEl.hidden){
